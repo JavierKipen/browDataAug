@@ -1,26 +1,58 @@
 import pandas as pd
 import numpy as np
+import os
 
-##Loads all the datasets to be used later
-def allDataset_loader(data_folder): 
-    #Datasets selected for Quipu training in the original script
-    dataset =         pd.concat([ 
-        pd.read_hdf(data_folder+"dataset_part1.hdf5"),
-        pd.read_hdf(data_folder+"dataset_part2.hdf5")
-    ])
-    #datasetTestEven = pd.read_hdf(data_folder+"datasetTestEven.hdf5")
-    #datasetTestOdd =  pd.read_hdf(data_folder+"datasetTestOdd.hdf5")
-    #datasetTestMix =  pd.read_hdf(data_folder+"datasetTestMix.hdf5")
-    datasetWithAntibodies =  pd.concat([ 
-        pd.read_hdf(data_folder+"datasetWithAntibodies_part1.hdf5"),
-        pd.read_hdf(data_folder+"datasetWithAntibodies_part2.hdf5")
-    ])
-    datasetExtra =    pd.read_hdf(data_folder+"datasetExtra.hdf5")
+def normaliseLength(trace, length = 700, trim = 0, std_default=0.006): ##Paramters given in quipus code
+    """
+    Normalizes the length of the trace and trims the front 
     
-    allDatasets = pd.concat([dataset , datasetExtra, datasetWithAntibodies],ignore_index = True)
-    allDatasets = allDatasets[allDatasets.Filter] # clear bad points
+    :param length: length to fit the trace into (default: 600)
+    :param trim: how many points to drop in front of the trace (default: 0)
+    :return: trace of length 'length' 
+    """
+    if len(trace) >= length + trim:
+        return trace[trim : length+trim]
+    else:
+        return np.append(
+            trace[trim:],
+            np.random.normal(0, std_default, length - len(trace[trim:]))
+        )    
 
-    allDatasets=allDatasets[ ["barcode", "nanopore","trace"]]; #Keep the only information that we will use
+##Loads all the datasets as a df with traces normalized and number of nanopore and code.
+def allDataset_loader(data_folder,path_dataset_preprocessed="../data/dataset.hdf5",cut=True):
+    df_name='datasetQuipu' if cut else 'datasetQuipuUncut'
+    if os.path.exists(path_dataset_preprocessed):
+        allDatasets=pd.read_hdf(path_dataset_preprocessed, df_name)  
+    else:
+        #Datasets selected for Quipu training in the original script
+        dataset =         pd.concat([ 
+            pd.read_hdf(data_folder+"dataset_part1.hdf5"),
+            pd.read_hdf(data_folder+"dataset_part2.hdf5")
+        ])
+        #datasetTestEven = pd.read_hdf(data_folder+"datasetTestEven.hdf5")
+        #datasetTestOdd =  pd.read_hdf(data_folder+"datasetTestOdd.hdf5")
+        #datasetTestMix =  pd.read_hdf(data_folder+"datasetTestMix.hdf5")
+        datasetWithAntibodies =  pd.concat([ 
+            pd.read_hdf(data_folder+"datasetWithAntibodies_part1.hdf5"),
+            pd.read_hdf(data_folder+"datasetWithAntibodies_part2.hdf5")
+        ])
+        datasetExtra =    pd.read_hdf(data_folder+"datasetExtra.hdf5")
+        
+        allDatasets = pd.concat([dataset , datasetExtra, datasetWithAntibodies],ignore_index = True)
+        allDatasets = allDatasets[allDatasets.Filter] # clear bad points
+    
+        #Here I should normalize the traces
+        traces = allDatasets.trace
+        traces_uniform = traces.apply(lambda x: normaliseLength(x))
+        traces_normalised_unif =  - traces_uniform / allDatasets.UnfoldedLevel 
+        traces_normalised = - traces / allDatasets.UnfoldedLevel;
+        allDatasets.trace = traces_normalised_unif;
+        quipu_ds=allDatasets[ ["barcode", "nanopore","trace"]]; #Keep the only information that we will use
+        quipu_ds.to_hdf(path_dataset_preprocessed, 'datasetQuipu');
+        allDatasets.trace = traces_normalised;
+        uncut_ds=allDatasets[ ["barcode", "nanopore","trace"]]; #Keep the only information that we will use
+        uncut_ds.to_hdf(path_dataset_preprocessed, mode='a', key='datasetQuipuUncut');
+        allDatasets=quipu_ds if cut else uncut_ds;
     return allDatasets;
 def create_random_tuples(barcode,code_nanopores,meas_counts,min_perc,max_perc):
     perc_ds=np.asarray(meas_counts)/np.sum(meas_counts)*100;
@@ -90,11 +122,13 @@ def show_partition_nanopores(ds):
     aux=ds.groupby(aux.columns.tolist(),as_index=False).size();
     return aux;
     
-data_folder="../ext/QuipuData/";
-allDatasets=allDataset_loader(data_folder)
-trainSet,testSet=dataset_split(allDatasets)
-samples_perc=show_porcentages(trainSet,testSet)
 
-print(show_partition_nanopores(trainSet))
-print(show_partition_nanopores(testSet))
+if __name__ == "__main__":
+    data_folder="../ext/QuipuData/";
+    allDatasets=allDataset_loader(data_folder)
+    trainSet,testSet=dataset_split(allDatasets)
+    samples_perc=show_porcentages(trainSet,testSet)
+    
+    print(show_partition_nanopores(trainSet))
+    print(show_partition_nanopores(testSet))
 
