@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
 import os
+from params import QUIPU_DATA_FOLDER,QUIPU_LEN_CUT,QUIPU_STD_FILL_DEFAULT
 
-def normaliseLength(trace, length = 700, trim = 0, std_default=0.006): ##Paramters given in quipus code
+def normaliseLength(trace, length = QUIPU_LEN_CUT, trim = 0, std_default=QUIPU_STD_FILL_DEFAULT): ##Paramters given in quipus code
     """
     Normalizes the length of the trace and trims the front 
     
