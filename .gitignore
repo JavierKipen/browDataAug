@@ -1,4 +1,4 @@
 data/
-ext/QuipuData/
+ext/
 scripts/__pycache__/
 scripts/.ipynb_checkpoints/
