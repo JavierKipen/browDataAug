@@ -17,7 +17,7 @@ from params import QUIPU_LEN_CUT,QUIPU_N_LABELS
 
 def get_quipu_model(n_filters_block_1=64,kernel_size_block_1=7,dropout_intermediate_blocks=0.25,
                     n_filters_block_2=128,kernel_size_block_2=5,n_filters_block_3=256,kernel_size_block_3=3,
-                    n_dense_1=1000,n_dense_2=500,dropout_final=0.4):
+                    n_dense_1=512,n_dense_2=512,dropout_final=0.4):
     input_trace = Input(shape=(QUIPU_LEN_CUT,1), dtype='float32', name='input')
 
     x = Conv1D(n_filters_block_1, kernel_size_block_1, padding="same")(input_trace)

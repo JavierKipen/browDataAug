@@ -18,14 +18,15 @@ from tensorflow.keras.models import clone_model
 
 
 class ModelTrainer():
-    def __init__(self,n_epochs_max=100,lr = 5e-4,batch_size=128,early_stopping_patience=10):
+    def __init__(self,n_epochs_max=100,lr = 1e-3,batch_size=128,early_stopping_patience=18,brow_std=0.9,brow_aug_use=True):
         self.dl=DataLoader();
-        self.da=DataAugmentator();
+        self.da=DataAugmentator(brow_std=brow_std);
         self.shapeX = (-1, QUIPU_LEN_CUT,1); self.shapeY = (-1, QUIPU_N_LABELS);
         self.n_epochs_max=n_epochs_max;
         self.lr=lr;
         self.batch_size=batch_size;
         self.early_stopping_patience=early_stopping_patience;
+        self.brow_aug_use=brow_aug_use;
     
     def crossval_es(self,model_base,n_runs=20,data_folder='../results/QuipuTrainedWithES.csv'):
 
@@ -47,7 +48,7 @@ class ModelTrainer():
         for n_epoch in range(self.n_epochs_max):
             print("=== Epoch:", n_epoch,"===")
             start_time = time.time()
-            X=self.da.quipu_augment(X_train);
+            X= self.da.all_augments(X_train) if self.brow_aug_use else self.da.quipu_augment(X_train);
             preparation_time = time.time() - start_time
             # Fit the model
             out_history = model.fit( 
@@ -73,11 +74,10 @@ class ModelTrainer():
         train_acc,valid_acc,test_acc=self.eval_model_and_print_results(model,X_train,Y_train,X_valid,Y_valid,X_test,Y_test)
         return train_acc, valid_acc, test_acc, n_epoch
     ##Quipu base code to compare
-    def quipu_def_train(self,n_epochs=60):
+    def quipu_def_train(self,model,n_epochs=60,with_brow_aug=False):
         #tensorboard, history = resetHistory()
         lr = 1e-3
         X_train,X_valid,Y_train,Y_valid,X_test,Y_test=self.dl.get_datasets_numpy_quipu();
-        model=get_quipu_model ();
         model.compile(
             loss = 'categorical_crossentropy', 
             optimizer = Adam(lr=0.001),
@@ -89,7 +89,8 @@ class ModelTrainer():
         for n in range(0, n_epochs):
             print("=== Epoch:", n,"===")
             start_time = time.time()
-            X=self.da.quipu_augment(X_train);
+           
+            X=self.da.all_augments(X_train) if with_brow_aug else self.da.quipu_augment(X_train) ;
             # Learning rate decay
             lr = lr*0.97
             model.optimizer.lr.assign(lr)
@@ -112,7 +113,7 @@ class ModelTrainer():
                   '  train time: %3.1f sec' % training_time)
             print('  loss: %5.3f' % out_history.history['loss'][0] ,'  acc: %5.4f' % out_history.history['accuracy'][0] ,'  val_acc: %5.4f' % out_history.history['val_accuracy'][0])
             #print('  loss: %5.3f' % out_history.history['loss'][0] ,'  acc: %5.4f' % out_history.history['accuracy'][0] ,'  val_acc: %5.4f' % out_history.history['val_acc'][0])
-            train_acc,valid_acc,test_acc=self.eval_model_and_print_results(model,X_train,Y_train,X_valid,Y_valid,X_test,Y_test)
+        train_acc,valid_acc,test_acc=self.eval_model_and_print_results(model,X_train,Y_train,X_valid,Y_valid,X_test,Y_test)
         return train_acc, valid_acc, test_acc
     def eval_model_and_print_results(self,model,X_train,Y_train,X_valid,Y_valid,X_test,Y_test):
         print("       [ loss , accuracy ]")
