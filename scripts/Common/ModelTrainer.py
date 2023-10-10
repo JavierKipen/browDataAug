@@ -18,9 +18,9 @@ from tensorflow.keras.models import clone_model
 
 
 class ModelTrainer():
-    def __init__(self,n_epochs_max=100,lr = 1e-3,batch_size=128,early_stopping_patience=18,brow_std=0.9,brow_aug_use=True):
+    def __init__(self,n_epochs_max=100,lr = 1e-3,batch_size=128,early_stopping_patience=18,brow_std=0.9,brow_aug_use=True,opt_aug=True):
         self.dl=DataLoader();
-        self.da=DataAugmentator(brow_std=brow_std);
+        self.da=DataAugmentator(brow_std=brow_std,opt_aug=opt_aug);
         self.shapeX = (-1, QUIPU_LEN_CUT,1); self.shapeY = (-1, QUIPU_N_LABELS);
         self.n_epochs_max=n_epochs_max;
         self.lr=lr;

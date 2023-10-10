@@ -20,7 +20,7 @@ def normaliseLength(trace, length = QUIPU_LEN_CUT, trim = 0, std_default=QUIPU_S
         )    
 
 ##Loads all the datasets as a df with traces normalized and number of nanopore and code.
-def allDataset_loader(data_folder,path_dataset_preprocessed="../data/dataset.hdf5",cut=True):
+def allDataset_loader(data_folder,path_dataset_preprocessed="../../data/dataset.hdf5",cut=True):
     df_name='datasetQuipu' if cut else 'datasetQuipuUncut'
     if os.path.exists(path_dataset_preprocessed):
         allDatasets=pd.read_hdf(path_dataset_preprocessed, df_name)  

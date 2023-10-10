@@ -1,3 +1,7 @@
+
+
+
+
 # -*- coding: utf-8 -*-
 """
 Created on Thu Aug 24 11:54:58 2023
@@ -5,7 +9,7 @@ Created on Thu Aug 24 11:54:58 2023
 @author: JK-WORK
 """
 import numpy as np
-from scipy import signal
+from scipy import signal,interpolate
 from params import QUIPU_MAGNITUDE_STD,QUIPU_STRETCH_PROB,QUIPU_STRETCH_STD,QUIPU_NOISE_AUG_STD,QUIPU_STD_FILL_DEFAULT
 from DatasetFuncs import normaliseLength
 import copy
@@ -14,19 +18,20 @@ import tensorflow as tf
 
 
 class DataAugmentator():
-    def __init__(self,brow_std=0.9,magnitude_std=QUIPU_MAGNITUDE_STD,stretch_prob=QUIPU_STRETCH_PROB,stretch_std=QUIPU_STRETCH_STD,noise_std=QUIPU_NOISE_AUG_STD):
+    def __init__(self,brow_std=0.9,magnitude_std=QUIPU_MAGNITUDE_STD,stretch_prob=QUIPU_STRETCH_PROB,stretch_std=QUIPU_STRETCH_STD,noise_std=QUIPU_NOISE_AUG_STD,opt_aug=True):
         self.stretch_std=stretch_std;
         self.magnitude_std=magnitude_std;
         self.stretch_prob=stretch_prob;
         self.noise_std=noise_std;
-        self.browAug=tf.load_op_library('./../ext/BrownianDataAugmentation/TFBrowAug/browAug.so');
+        self.browAug=tf.load_op_library('./../../ext/BrownianDataAugmentation/TFBrowAug/browAug.so');
         self.brow_std=brow_std;
+        self.opt_aug=opt_aug;
         #self.brow_std;
     def all_augments(self,X_train):
         X = copy.deepcopy(X_train) # make copies
         X = self.brow_aug(X)
         X = self.magnitude_aug(X, std = self.magnitude_std) 
-        X = self.stretch_aug(X, std=self.stretch_std, probability=self.stretch_prob)
+        X = self.stretch_aug(X, std=self.stretch_std, probability=self.stretch_prob) if self.opt_aug==False else stretch_aug_v2(self,xs, stretch_std_val = self.stretch_std);
         X = self.addNoise( X, std = self.noise_std) 
         return X;
     def quipu_augment(self,X_train):
@@ -81,6 +86,27 @@ class DataAugmentator():
         "Add gaussian noise"
         return xs + np.random.normal(0, std, xs.shape)
 
+    def stretch_aug_v2(self,xs, stretch_std_val = 0.08):
+        x_new = np.copy(xs)
+        n_reads=np.shape(xs)[1];
+        length=np.shape(xs)[0];
+        new_lens=(length*np.random.normal(1, stretch_std_val,n_reads)).astype(int);
+        n_noise_needed=np.sum(length-new_lens[new_lens<length]); ##New samples of noise needed to fill
+        fill_noise=np.random.normal(0, QUIPU_STD_FILL_DEFAULT,n_noise_needed);
+        count_noise=0;
+        for i in range(n_reads):
+            f = interpolate.interp1d(np.arange(length), xs[:,i])
+            if new_lens[i]<length:
+                n_samples_fill=length-new_lens[i];
+                x_new[:new_lens[i],i]=f(np.arange(new_lens[i]));
+                x_new[new_lens[i]:,i]=fill_noise[count_noise:count_noise+n_samples_fill];
+                count_noise=count_noise+n_samples_fill;
+            else:
+                x_idx_interpol=np.linspace(0,(length/new_lens[i])*(length-1),num=length);
+                x_new[:,i]=f(x_idx_interpol);
+            
+        return x_new
+
     
 
 def test_brow_aug(X_train,out_aug):
@@ -91,12 +117,25 @@ def test_brow_aug(X_train,out_aug):
         plt.plot(out_aug[i,:])
         plt.show()
 
-
-if __name__ == "__main__":
-    from DataLoader import DataLoader
-    dl=DataLoader();
-    #X_train,X_valid,Y_train,Y_valid,X_test,Y_test=dl.get_datasets_numpy_quipu();
-    X_train,X_valid,Y_train,Y_valid,X_test,Y_test=dl.get_datasets_numpy();
+def test_stretch_v2():
+    import matplotlib.pyplot as plt
+    idxs=np.arange(700);
+    n_runs=10;
+    x=1/np.abs(idxs-350.5);
+    x=np.tile(x,(n_runs,1)).T
     da=DataAugmentator();
-    out=da.brow_aug(X_train);
-    test_brow_aug(X_train,out);
+    out=da.stretch_aug_v2(x);
+    plt.figure();
+    for i in range(n_runs):
+        plt.plot(out[:,i])
+    plt.show()
+    
+if __name__ == "__main__":
+    test_stretch_v2()
+    # from DataLoader import DataLoader
+    # dl=DataLoader();
+    # #X_train,X_valid,Y_train,Y_valid,X_test,Y_test=dl.get_datasets_numpy_quipu();
+    # X_train,X_valid,Y_train,Y_valid,X_test,Y_test=dl.get_datasets_numpy();
+    # da=DataAugmentator();
+    # out=da.brow_aug(X_train);
+    # test_brow_aug(X_train,out);

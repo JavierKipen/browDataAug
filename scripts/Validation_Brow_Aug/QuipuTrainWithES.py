@@ -1,3 +1,9 @@
+import os
+import sys
+
+path_common=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+"/Common/";
+sys.path.append(path_common) #Adds common path to import the python files
+
 from ModelTrainer import ModelTrainer
 import tensorflow as tf
 from ModelFuncs import get_quipu_model
