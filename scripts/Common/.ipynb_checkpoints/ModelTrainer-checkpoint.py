@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import clone_model
+from datetime import datetime
 
 
 class ModelTrainer():
@@ -126,6 +127,7 @@ class ModelTrainer():
         print("Test :", test_results )
         train_acc= train_results[1];valid_acc= valid_results[1];test_acc= test_results[1];
         return train_acc,valid_acc,test_acc
+
         
     
 if __name__ == "__main__":

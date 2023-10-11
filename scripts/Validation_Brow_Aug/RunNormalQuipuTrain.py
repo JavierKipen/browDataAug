@@ -39,7 +39,7 @@ df_results = pd.DataFrame(0, index=np.arange(n_runs), columns=["Train Acc", "Val
 
 for i in range(n_runs):
     start_time = time.time()
-    mt=ModelTrainer()
+    mt=ModelTrainer(opt_aug=False)
     model=get_quipu_model(n_dense_1=n1,n_dense_2=n2);
     acc_train,acc_valid,acc_test=mt.quipu_def_train(model,n_epochs=60,with_brow_aug=True)
     runtime = time.time() - start_time 

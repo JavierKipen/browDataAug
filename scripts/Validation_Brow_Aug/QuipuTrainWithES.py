@@ -21,7 +21,7 @@ use_brow_aug=True;
 lr=5e-4;batch_size=256; #Should keep them constant for all the runs to make a fair comparison
 
 folder_es_train="../results/TrainingWithES/";
-mt=ModelTrainer(brow_std=brow_aug,batch_size=batch_size,brow_aug_use=use_brow_aug,lr=lr);
+mt=ModelTrainer(brow_std=brow_aug,batch_size=batch_size,brow_aug_use=use_brow_aug,lr=lr,opt_aug=False);
 model=get_quipu_model(n_dense_1=n1,n_dense_2=n2);
 if use_brow_aug:
     run_name="WBrowAug_"+str(int(brow_aug))+str(int(math.modf(brow_aug)[0]*100))+"_N1_"+str(n1)+"_N2_"+str(n2)+"_again.csv";

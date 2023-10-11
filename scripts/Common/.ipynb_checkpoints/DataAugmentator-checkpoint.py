@@ -31,7 +31,7 @@ class DataAugmentator():
         X = copy.deepcopy(X_train) # make copies
         X = self.brow_aug(X)
         X = self.magnitude_aug(X, std = self.magnitude_std) 
-        X = self.stretch_aug(X, std=self.stretch_std, probability=self.stretch_prob) if self.opt_aug==False else stretch_aug_v2(self,xs, stretch_std_val = self.stretch_std);
+        X = self.stretch_aug(X, std=self.stretch_std, probability=self.stretch_prob) if self.opt_aug==False else self.stretch_aug_v2(X, stretch_std_val = self.stretch_std); ##Tested with profiler and stretch_aug_v2 is faster + augments all .
         X = self.addNoise( X, std = self.noise_std) 
         return X;
     def quipu_augment(self,X_train):

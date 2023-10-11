@@ -17,6 +17,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import clone_model
 
 
+
 class ModelTrainer():
     def __init__(self,n_epochs_max=100,lr = 1e-3,batch_size=128,early_stopping_patience=18,brow_std=0.9,brow_aug_use=True,opt_aug=True):
         self.dl=DataLoader();
@@ -126,6 +127,7 @@ class ModelTrainer():
         print("Test :", test_results )
         train_acc= train_results[1];valid_acc= valid_results[1];test_acc= test_results[1];
         return train_acc,valid_acc,test_acc
+
         
     
 if __name__ == "__main__":

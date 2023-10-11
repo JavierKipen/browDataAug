@@ -11,7 +11,7 @@ import pstats
 
 
 dl=DataLoader();
-da=DataAugmentator(brow_std=0.9);
+da=DataAugmentator(brow_std=0.9,opt_aug=False);
 X_train,X_valid,Y_train,Y_valid,X_test,Y_test=dl.get_datasets_numpy();
 
 cProfile.run('a=da.all_augments(X_train)', 'restats')
