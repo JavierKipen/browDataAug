@@ -13,10 +13,10 @@ class DataLoader():
         self.df_cut=allDataset_loader(QUIPU_DATA_FOLDER,cut=True); #Loads both datasets to the class
         self.df_uncut=allDataset_loader(QUIPU_DATA_FOLDER,cut=False);
         
-    def get_datasets_numpy(self,validation_prop=0.15): #Gets the numpy arrays for the NN repeating samples per class so all have the same "weight", and also separates into validation keeping the same percentage of samples per class.
+    def get_datasets_numpy(self,validation_prop=0.15,repeat_classes=True): #Gets the numpy arrays for the NN repeating samples per class so all have the same "weight", and also separates into validation keeping the same percentage of samples per class.
         df_train,df_test=dataset_split(self.df_cut,min_perc=self.min_perc_test,max_perc=self.max_perc_test);
         X_train,Y_train=self.quipu_df_to_numpy(df_train);X_test,Y_test=self.quipu_df_to_numpy(df_test);
-        X_train,X_valid,Y_train,Y_valid=self.divide_numpy_ds(X_train,Y_train,1-validation_prop,keep_perc_classes=True,repeat_classes=True);
+        X_train,X_valid,Y_train,Y_valid=self.divide_numpy_ds(X_train,Y_train,1-validation_prop,keep_perc_classes=True,repeat_classes=repeat_classes);
         return X_train,X_valid,Y_train,Y_valid,X_test,Y_test
         
     def get_datasets_numpy_quipu(self,validation_prop=QUIPU_VALIDATION_PROP_DEF): #Gets the numpy arrays for the NN as it is done in Quipus code, with train, validation and test sets

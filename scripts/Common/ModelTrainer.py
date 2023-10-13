@@ -19,7 +19,7 @@ from tensorflow.keras.models import clone_model
 
 
 class ModelTrainer():
-    def __init__(self,n_epochs_max=100,lr = 1e-3,batch_size=128,early_stopping_patience=18,brow_std=0.9,brow_aug_use=True,opt_aug=True):
+    def __init__(self,n_epochs_max=100,lr = 1e-3,batch_size=128,early_stopping_patience=18,brow_std=0.9,brow_aug_use=True,opt_aug=False,use_weights=False,track_losses=False): #Opt_aug still has bugs, have to check
         self.dl=DataLoader();
         self.da=DataAugmentator(brow_std=brow_std,opt_aug=opt_aug);
         self.shapeX = (-1, QUIPU_LEN_CUT,1); self.shapeY = (-1, QUIPU_N_LABELS);
@@ -28,24 +28,43 @@ class ModelTrainer():
         self.batch_size=batch_size;
         self.early_stopping_patience=early_stopping_patience;
         self.brow_aug_use=brow_aug_use;
-    
+        self.use_weights=use_weights;
+        self.train_losses=[];
+        self.valid_losses=[];
+        self.train_aug_losses=[];
+        self.track_losses=track_losses;
+    def num_list_to_str(self,num_list):
+        return '[{:s}]'.format(' '.join(['{:.3f}'.format(x) for x in num_list]))
     def crossval_es(self,model_base,n_runs=20,data_folder='../results/QuipuTrainedWithES.csv'):
-
-        df_results = pd.DataFrame(0, index=np.arange(n_runs), columns=["Train Acc", "Validation acc", "Test Acc","N Epochs", "Runtime"])
+        cols=["Train Acc", "Validation acc", "Test Acc","N Epochs", "Runtime"]
+        if self.track_losses:
+            cols.append("Train Losses");cols.append("Train Aug Losses");cols.append("Valid Losses");
+        df_results = pd.DataFrame(0, index=np.arange(n_runs), columns=cols)
         for i in range(n_runs):
             start_time = time.time()
             model=clone_model(model_base); # https://stackoverflow.com/questions/40496069/reset-weights-in-keras-layer Reinitializes model
             train_acc, valid_acc, test_acc, n_epoch = self.train_es(model)
             runtime = time.time() - start_time 
-            df_results.loc[i]=[train_acc,valid_acc,test_acc,n_epoch,runtime];
+            row=[train_acc,valid_acc,test_acc,n_epoch,runtime];
+            if self.track_losses:
+                row.append(self.num_list_to_str(self.train_losses));row.append(self.num_list_to_str(self.train_aug_losses));
+                row.append(self.num_list_to_str(self.valid_losses));
+            df_results.loc[i]=row;
         df_results.to_csv(data_folder, index=False)
-        
+
+    
     def train_es(self,model, batch_size_val=512): #Runs training with early stopping, more controlled manner than quipus original
 
-        X_train,X_valid,Y_train,Y_valid,X_test,Y_test=self.dl.get_datasets_numpy();
+        X_train,X_valid,Y_train,Y_valid,X_test,Y_test=self.dl.get_datasets_numpy(repeat_classes= (not self.use_weights) ); #When weights are used 
         model.compile(loss = 'categorical_crossentropy', optimizer = Adam(learning_rate=self.lr),metrics = ['accuracy'])
         X_valid_rs = X_valid.reshape(self.shapeX); Y_valid_rs = Y_valid.reshape(self.shapeY)
         best_weights=model.get_weights();best_valid_loss=1e6;patience_count=0;
+        weights=class_weight.compute_class_weight(class_weight ='balanced',classes = np.arange(QUIPU_N_LABELS), y =np.argmax(Y_train,axis=1))
+        weights=dict(zip(np.arange(QUIPU_N_LABELS), weights))
+        weights_final= weights if self.use_weights else None;
+        self.train_losses=[];
+        self.valid_losses=[];
+        self.train_aug_losses=[];
         for n_epoch in range(self.n_epochs_max):
             print("=== Epoch:", n_epoch,"===")
             start_time = time.time()
@@ -54,8 +73,9 @@ class ModelTrainer():
             # Fit the model
             out_history = model.fit( 
                 x = X.reshape(self.shapeX), y = Y_train.reshape(self.shapeY), 
-                batch_size=self.batch_size, shuffle = True, epochs=1,verbose = 1
+                batch_size=self.batch_size, shuffle = True, epochs=1,verbose = 1, class_weight = weights_final, 
             )
+            
             print("Validation ds:")
             valid_res=model.evaluate(x = X_valid_rs,   y = Y_valid_rs,   verbose=True,batch_size=batch_size_val);
             if valid_res[0]<best_valid_loss:
@@ -66,6 +86,11 @@ class ModelTrainer():
                 patience_count+=1;
             #Others
             training_time = time.time() - start_time - preparation_time
+            if self.track_losses:
+                self.valid_losses.append(valid_res[0]);
+                train_res=model.evaluate(x = X_train.reshape(self.shapeX),   y = Y_train, batch_size=batch_size_val);
+                self.train_losses.append(train_res[0]);
+                self.train_aug_losses.append(out_history.history['loss'][0]);
             
             print('  prep time: %3.1f sec' % preparation_time, '  train time: %3.1f sec' % training_time)
             if patience_count>self.early_stopping_patience or n_epoch==self.n_epochs_max-1:

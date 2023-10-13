@@ -18,7 +18,7 @@ import tensorflow as tf
 
 
 class DataAugmentator():
-    def __init__(self,brow_std=0.9,magnitude_std=QUIPU_MAGNITUDE_STD,stretch_prob=QUIPU_STRETCH_PROB,stretch_std=QUIPU_STRETCH_STD,noise_std=QUIPU_NOISE_AUG_STD,opt_aug=True):
+    def __init__(self,brow_std=0.9,magnitude_std=QUIPU_MAGNITUDE_STD,stretch_prob=QUIPU_STRETCH_PROB,stretch_std=QUIPU_STRETCH_STD,noise_std=QUIPU_NOISE_AUG_STD,opt_aug=False): #Opt aug still has bugs, dont understand well why.
         self.stretch_std=stretch_std;
         self.magnitude_std=magnitude_std;
         self.stretch_prob=stretch_prob;

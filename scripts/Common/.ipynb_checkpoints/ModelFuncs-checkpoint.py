@@ -11,8 +11,9 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Dense, Activation, Dropout, Flatten, Input, Embedding,BatchNormalization
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.layers import Conv1D, MaxPooling1D, Embedding
+from tensorflow.keras.layers import Conv1D, MaxPooling1D, Embedding, AveragePooling1D
 from params import QUIPU_LEN_CUT,QUIPU_N_LABELS
+from tensorflow.keras.regularizers import l2
 
 
 def get_quipu_model(n_filters_block_1=64,kernel_size_block_1=7,dropout_intermediate_blocks=0.25,
@@ -63,7 +64,7 @@ Non-trainable params: 4,040  When Ndense1=2048 Ndense2=1024. To know how many pa
 
 
 #based on https://www.analyticsvidhya.com/blog/2021/08/how-to-code-your-resnet-from-scratch-in-tensorflow/
-def get_resnet_model(filter_size=64, block_layers=[3,4,6,3], init_conv_kernel=7,init_pool_size=3, end_pool_size=2,dense_1=None,dropout_1=0.3,l2reg=None,activation_fnc='relu'):
+def get_resnet_model(filter_size=64, block_layers=[3,4,6,3], init_conv_kernel=7,init_pool_size=3, end_pool_size=2,dense_1=None,dropout_val=0.3,l2reg=None,dense_2=None,activation_fnc='relu'):
 
     kernel_regularizer=None if (l2reg is None) else l2(l2reg);
     input_trace = Input(shape=(QUIPU_LEN_CUT,1), dtype='float32', name='input')
@@ -90,7 +91,10 @@ def get_resnet_model(filter_size=64, block_layers=[3,4,6,3], init_conv_kernel=7,
     x=Flatten()(x)
     if dense_1 is not None:
         x=Dense(dense_1, activation=activation_fnc,kernel_regularizer=kernel_regularizer)(x)
-        x=Dropout(dropout_1)(x)
+        x=Dropout(dropout_val)(x)
+    if dense_2 is not None:
+        x=Dense(dense_2, activation=activation_fnc,kernel_regularizer=kernel_regularizer)(x)
+        x=Dropout(dropout_val)(x)
 
     output_barcode = Dense(QUIPU_N_LABELS, activation='softmax', name='output_barcode')(x)
     model = Model(inputs=input_trace, outputs=output_barcode)
@@ -125,7 +129,7 @@ def resnet_conv_block(x,filter_size,kernel_size=3,kernel_regularizer=None,activa
     x_skip = Conv1D(filter_size, 1, padding = 'same',strides=2,kernel_regularizer=kernel_regularizer)(x) ##Kernel for skip connection is 1
     out = layers.add([conv_block, x_skip])     
     out = Activation(activation_str)(out)
-    return x
+    return out
 
 
 if __name__ == "__main__":
