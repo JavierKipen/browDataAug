@@ -26,6 +26,7 @@ class DataAugmentator():
         self.browAug=tf.load_op_library('./../../ext/BrownianDataAugmentation/TFBrowAug/browAug.so');
         self.brow_std=brow_std;
         self.opt_aug=opt_aug;
+        self.fill_noise_std=0.046;
         #self.brow_std;
     def all_augments(self,X_train):
         X = copy.deepcopy(X_train) # make copies
@@ -45,7 +46,7 @@ class DataAugmentator():
         n_samples=np.shape(X_train_augmented)[1];
         idxs_to_fix=np.argwhere(lengths<n_samples)[:,0]
         for i in idxs_to_fix:
-            noise=np.random.randn(n_samples)*QUIPU_STD_FILL_DEFAULT;
+            noise=np.random.randn(n_samples)*self.fill_noise_std;
             X_train_augmented[i,int(lengths[i]):]=noise[int(lengths[i]):] #Fills nans with the background noise instead of nans.
     
 
@@ -80,7 +81,7 @@ class DataAugmentator():
     def _mutateDurationTrace(self,x, std = 0.1):
         "adjust the sampling rate"
         length = len(x)
-        return normaliseLength( signal.resample(x, int(length*np.random.normal(1, std))) , length = length)
+        return normaliseLength( signal.resample(x, int(length*np.random.normal(1, std))) , length = length, std_default=self.fill_noise_std)
     
     def addNoise(self,xs, std = QUIPU_NOISE_AUG_STD):
         "Add gaussian noise"
@@ -129,9 +130,24 @@ def test_stretch_v2():
     for i in range(n_runs):
         plt.plot(out[:,i])
     plt.show()
-    
+
+
+def test_weird_noise(): #It happened that in some aug samples a different noise appears on the right side. 
+    from DataLoader import DataLoader
+    import matplotlib.pyplot as plt
+    dl=DataLoader();
+    np.random.seed(1);
+    da=DataAugmentator();
+    X_train,X_valid,Y_train,Y_valid,X_test,Y_test=dl.get_datasets_numpy();
+    out=da.brow_aug(X_train[:100,:]);
+    for i in range(20):
+        plt.plot(X_train[i,:],label="Original")
+        plt.plot(out[i,:],label="Aug")
+        plt.legend()
+        plt.show()
+
 if __name__ == "__main__":
-    test_stretch_v2()
+    test_weird_noise()
     # from DataLoader import DataLoader
     # dl=DataLoader();
     # #X_train,X_valid,Y_train,Y_valid,X_test,Y_test=dl.get_datasets_numpy_quipu();
