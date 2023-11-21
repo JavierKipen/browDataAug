@@ -30,10 +30,14 @@ class DataAugmentator():
         #self.brow_std;
     def all_augments(self,X_train):
         X = copy.deepcopy(X_train) # make copies
-        X = self.brow_aug(X)
-        X = self.magnitude_aug(X, std = self.magnitude_std) 
-        X = self.stretch_aug(X, std=self.stretch_std, probability=self.stretch_prob) if self.opt_aug==False else self.stretch_aug_v2(X, stretch_std_val = self.stretch_std); ##Tested with profiler and stretch_aug_v2 is faster + augments all .
-        X = self.addNoise( X, std = self.noise_std) 
+        if self.brow_std > 0: 
+            X = self.brow_aug(X)
+        if self.magnitude_std > 0:
+            X = self.magnitude_aug(X, std = self.magnitude_std) 
+        if self.stretch_std > 0 :
+            X = self.stretch_aug(X, std=self.stretch_std, probability=self.stretch_prob) if self.opt_aug==False else self.stretch_aug_v2(X, stretch_std_val = self.stretch_std); ##Tested with profiler and stretch_aug_v2 is faster + augments all .
+        if self.noise_std > 0:
+            X = self.addNoise( X, std = self.noise_std) 
         return X;
     def quipu_augment(self,X_train):
         X = copy.deepcopy(X_train) # make copies
@@ -52,13 +56,15 @@ class DataAugmentator():
 
         
     ##From quipus code:
-    def brow_aug(self,X_in):
+    def brow_aug(self,X_in,ret_noise=False):
         noise=np.random.randn(np.shape(X_in)[0],np.shape(X_in)[1])*self.brow_std;
         data_out,ev_len_out= self.browAug.BrowAug(data_in=X_in,noise=noise)
         data_out=data_out.numpy();
         ev_len_out=ev_len_out.numpy();
         data_out=data_out.reshape((-1,np.shape(X_in)[1]))
         self.replace_nans_w_noise(data_out,ev_len_out)
+        if ret_noise:
+            return data_out,noise
         return data_out
     
     def magnitude_aug(self,xs, std = QUIPU_MAGNITUDE_STD):
@@ -75,7 +81,9 @@ class DataAugmentator():
         """
         x_new = np.copy(xs)
         for i in range(len(xs)):
-            if np.random.rand() > probability:
+            if probability==1:
+                x_new[i] = self._mutateDurationTrace(x_new[i], std)
+            elif np.random.rand() > 1-probability:
                 x_new[i] = self._mutateDurationTrace(x_new[i], std)
         return x_new
     def _mutateDurationTrace(self,x, std = 0.1):

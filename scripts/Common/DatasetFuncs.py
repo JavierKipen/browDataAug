@@ -55,6 +55,28 @@ def allDataset_loader(data_folder,path_dataset_preprocessed="../../data/dataset.
         uncut_ds.to_hdf(path_dataset_preprocessed, mode='a', key='datasetQuipuUncut');
         allDatasets=quipu_ds if cut else uncut_ds;
     return allDatasets;
+
+def load_unfolded_df(data_folder="../../ext/QuipuData/"):
+    dataset =         pd.concat([ 
+        pd.read_hdf(data_folder+"dataset_part1.hdf5"),
+        pd.read_hdf(data_folder+"dataset_part2.hdf5")
+    ])
+    datasetWithAntibodies =  pd.concat([ 
+        pd.read_hdf(data_folder+"datasetWithAntibodies_part1.hdf5"),
+        pd.read_hdf(data_folder+"datasetWithAntibodies_part2.hdf5")
+    ])
+    datasetExtra =    pd.read_hdf(data_folder+"datasetExtra.hdf5")
+    
+    allDatasets = pd.concat([dataset , datasetExtra, datasetWithAntibodies],ignore_index = True)
+    allDatasets = allDatasets[allDatasets.Filter] # clear bad points
+    traces = allDatasets.trace
+    traces_uniform = traces.apply(lambda x: normaliseLength(x))
+    traces_normalised_unif =  - traces_uniform / allDatasets.UnfoldedLevel 
+    allDatasets.trace = traces_normalised_unif;
+    df_unfolded=allDatasets[~allDatasets["nbell_barcode"].isnull()]
+    df_unfolded=df_unfolded[df_unfolded["nbell_barcode"]<8]
+    return df_unfolded
+
 def create_random_tuples(barcode,code_nanopores,meas_counts,min_perc,max_perc):
     perc_ds=np.asarray(meas_counts)/np.sum(meas_counts)*100;
     tuples_test_list=[];

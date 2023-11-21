@@ -13,13 +13,13 @@ from ModelFuncs import get_quipu_model
 import time
 import numpy as np
 import pandas as pd
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam,SGD
 from tensorflow.keras.models import clone_model
 
 
 
 class ModelTrainer():
-    def __init__(self,n_epochs_max=100,lr = 1e-3,batch_size=128,early_stopping_patience=18,brow_std=0.9,brow_aug_use=True,opt_aug=False,use_weights=False,track_losses=False): #Opt_aug still has bugs, have to check
+    def __init__(self,n_epochs_max=100,lr = 1e-3,batch_size=128,early_stopping_patience=18,brow_std=0.9,brow_aug_use=True,opt_aug=False,use_weights=False,track_losses=False, optimizer="Adam",momentum=None): #Opt_aug still has bugs, have to check
         self.dl=DataLoader();
         self.da=DataAugmentator(brow_std=brow_std,opt_aug=opt_aug);
         self.shapeX = (-1, QUIPU_LEN_CUT,1); self.shapeY = (-1, QUIPU_N_LABELS);
@@ -33,6 +33,8 @@ class ModelTrainer():
         self.valid_losses=[];
         self.train_aug_losses=[];
         self.track_losses=track_losses;
+        self.optimizer=optimizer;
+        self.momentum=momentum;
     def num_list_to_str(self,num_list):
         return '[{:s}]'.format(' '.join(['{:.3f}'.format(x) for x in num_list]))
     def crossval_es(self,model_base,n_runs=20,data_folder='../results/QuipuTrainedWithES.csv'):
@@ -56,7 +58,10 @@ class ModelTrainer():
     def train_es(self,model, batch_size_val=512): #Runs training with early stopping, more controlled manner than quipus original
 
         X_train,X_valid,Y_train,Y_valid,X_test,Y_test=self.dl.get_datasets_numpy(repeat_classes= (not self.use_weights) ); #When weights are used 
-        model.compile(loss = 'categorical_crossentropy', optimizer = Adam(learning_rate=self.lr),metrics = ['accuracy'])
+        if self.optimizer=="Adam":
+            model.compile(loss = 'categorical_crossentropy', optimizer = Adam(learning_rate=self.lr),metrics = ['accuracy'])
+        else:
+            model.compile(loss = 'categorical_crossentropy', optimizer = SGD(learning_rate=self.lr,momentum=self.momentum),metrics = ['accuracy'])
         X_valid_rs = X_valid.reshape(self.shapeX); Y_valid_rs = Y_valid.reshape(self.shapeY)
         best_weights=model.get_weights();best_valid_loss=1e6;patience_count=0;
         weights=class_weight.compute_class_weight(class_weight ='balanced',classes = np.arange(QUIPU_N_LABELS), y =np.argmax(Y_train,axis=1))

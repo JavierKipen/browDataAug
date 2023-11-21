@@ -15,7 +15,7 @@ def get_attribute_values_str(list_attr,base_class):
         str_out += list_attr[i] + ": "+ str(operator.attrgetter(list_attr[i])(base_class))  + "\n";
     return str_out
 
-def dump_config(filename,modelTrainer,model,comment=""):
+def dump_config(filename,modelTrainer,model,modelInfo, comment=""):
     with open(filename, 'w') as f:
         if comment != "":
             f.write("Comment:"+ comment + "\n")
@@ -26,14 +26,19 @@ def dump_config(filename,modelTrainer,model,comment=""):
         f.write("---Data load config:---\n")
         f.write(get_attribute_values_str(["min_perc_test","max_perc_test"],modelTrainer.dl))
         f.write("---Model summary:---\n")
+        if not (modelInfo is None):
+            if modelInfo.model_type=="ResNet":
+                f.write(get_attribute_values_str(["filter_size","block_layers","dense_1","dense_2","dropout_end","dropout_blocks","activation"],modelInfo))
+            if modelInfo.model_type=="QuipuSkip":
+                f.write(get_attribute_values_str(["filter_size","kernels_blocks","dense_1","dense_2","dropout_val","activation"],modelInfo))
         model.summary(print_fn=lambda x: f.write(x + '\n'))
 
-def crossval_run_w_notes(modelTrainer,model,comment="",title_file="",out_folder="../../results/ResNetTuning/",n_runs=20):
+def crossval_run_w_notes(modelTrainer,model,modelInfo,comment="",title_file="",out_folder="../../results/ResNetTuning/",n_runs=20):
     out_folder_log=out_folder+"Logs/";
     out_folder_res=out_folder+"Results/";
     str_time=datetime.today().strftime('%Y%m%d_%H-%M-%S');
     modelTrainer.crossval_es(model,n_runs=n_runs,data_folder=out_folder_res+str_time+"_"+title_file+".csv");
-    dump_config(out_folder_log+str_time+"_"+title_file+".txt",modelTrainer,model,comment=comment)
+    dump_config(out_folder_log+str_time+"_"+title_file+".txt",modelTrainer,model,modelInfo,comment=comment)
 
 if __name__ == "__main__":
     import tensorflow as tf
