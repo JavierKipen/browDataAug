@@ -37,7 +37,7 @@ class ModelTrainer():
         self.momentum=momentum;
     def num_list_to_str(self,num_list):
         return '[{:s}]'.format(' '.join(['{:.3f}'.format(x) for x in num_list]))
-    def crossval_es(self,model_base,n_runs=20,data_folder='../results/QuipuTrainedWithES.csv'):
+    def crossval_es(self,model_base,n_runs=20,data_folder='../results/QuipuTrainedWithES.csv',save_each_row=False):
         cols=["Train Acc", "Validation acc", "Test Acc","N Epochs", "Runtime"]
         if self.track_losses:
             cols.append("Train Losses");cols.append("Train Aug Losses");cols.append("Valid Losses");
@@ -52,6 +52,10 @@ class ModelTrainer():
                 row.append(self.num_list_to_str(self.train_losses));row.append(self.num_list_to_str(self.train_aug_losses));
                 row.append(self.num_list_to_str(self.valid_losses));
             df_results.loc[i]=row;
+            if save_each_row:
+                row_filename=data_folder[:-4]+"_"+str(i)+".csv";
+                df_row=df_results.iloc[i,:];
+                df_row.to_csv(row_filename, index=False)
         df_results.to_csv(data_folder, index=False)
 
     

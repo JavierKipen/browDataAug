@@ -9,11 +9,12 @@ import tensorflow as tf
 from ModelFuncs import get_quipu_model
 import math
 
+
 physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.set_visible_devices(physical_devices[0], 'GPU')
 
 
-n_runs=100;
+n_runs=2;
 n1=2048;n2=1024;
 brow_aug=0.9;
 use_brow_aug=True;
