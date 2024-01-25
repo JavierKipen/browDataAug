@@ -58,7 +58,13 @@ class DataAugmentator():
     ##From quipus code:
     def brow_aug(self,X_in,ret_noise=False):
         noise=np.random.randn(np.shape(X_in)[0],np.shape(X_in)[1])*self.brow_std;
-        data_out,ev_len_out= self.browAug.BrowAug(data_in=X_in,noise=noise)
+        #data_out,ev_len_out= self.browAug.BrowAug(data_in=X_in,noise=noise)
+        data_out_gpu,ev_len_out_gpu= self.browAug.BrowAug(data_in=X_in,noise=noise)
+        #print("Memory utilization after brow Aug: " + str(tf.config.experimental.get_memory_info('GPU:0')["current"]))
+        data_out=tf.identity(data_out_gpu).cpu();ev_len_out=tf.identity(ev_len_out_gpu).cpu();
+        del data_out_gpu
+        del ev_len_out_gpu #Removes memory used from the GPU 
+        #print("Memory utilization after deletion: " + str(tf.config.experimental.get_memory_info('GPU:0')["current"]))
         data_out=data_out.numpy();
         ev_len_out=ev_len_out.numpy();
         data_out=data_out.reshape((-1,np.shape(X_in)[1]))

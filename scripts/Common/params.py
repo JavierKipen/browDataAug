@@ -7,7 +7,7 @@ Created on Thu Aug 24 10:57:26 2023
 
 QUIPU_LEN_CUT = 700 #Cuts samples to 700 
 QUIPU_STD_FILL_DEFAULT = 0.006
-QUIPU_DATA_FOLDER="../ext/QuipuData/";
+QUIPU_DATA_FOLDER="../../ext/QuipuData/";
 QUIPU_VALIDATION_PROP_DEF = 0.04
 QUIPU_N_LABELS = 8
 

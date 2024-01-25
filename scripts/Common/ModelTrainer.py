@@ -58,6 +58,12 @@ class ModelTrainer():
                 df_row.to_csv(row_filename, index=False)
         df_results.to_csv(data_folder, index=False)
 
+    def activate_gpu(self,model_base): #Runs training with early stopping, more controlled manner than quipus original
+        X_train,X_valid,Y_train,Y_valid,X_test,Y_test=self.dl.get_datasets_numpy(repeat_classes= (not self.use_weights) ); #When weights are used 
+        model=clone_model(model_base);
+        model.compile(loss = 'categorical_crossentropy', optimizer = Adam(learning_rate=self.lr),metrics = ['accuracy'])
+        X_train=X_train[:100,:];Y_train=Y_train[:100,:];        
+        out_history = model.fit(x = X_train.reshape(self.shapeX), y = Y_train.reshape(self.shapeY), epochs=1,verbose = 1)
     
     def train_es(self,model, batch_size_val=512): #Runs training with early stopping, more controlled manner than quipus original
 
