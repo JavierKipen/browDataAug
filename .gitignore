@@ -1,5 +1,6 @@
 data/
 ext/
 ext/BrownianDataAugmentation/TFBrowAug/browAug.so
+ext/BrownianDataAugmentation/TFBrowAug/browAug.cu.o
 scripts/__pycache__/
 scripts/.ipynb_checkpoints/
