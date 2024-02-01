@@ -16,7 +16,7 @@ tf.config.set_visible_devices(physical_devices[3], 'GPU')
 
 
 n_runs=50;
-n1=2048;n2=1024;
+n1=512;n2=512;
 brow_aug=0.9;
 use_brow_aug=True;
 
