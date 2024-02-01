@@ -62,12 +62,12 @@ class DataAugmentator():
         data_out_gpu,ev_len_out_gpu= self.browAug.BrowAug(data_in=X_in,noise=noise)
         #print("Memory utilization after brow Aug: " + str(tf.config.experimental.get_memory_info('GPU:0')["current"]))
         data_out=tf.identity(data_out_gpu).cpu();ev_len_out=tf.identity(ev_len_out_gpu).cpu();
-        del data_out_gpu
-        del ev_len_out_gpu #Removes memory used from the GPU 
-        #print("Memory utilization after deletion: " + str(tf.config.experimental.get_memory_info('GPU:0')["current"]))
         data_out=data_out.numpy();
         ev_len_out=ev_len_out.numpy();
         data_out=data_out.reshape((-1,np.shape(X_in)[1]))
+        del data_out_gpu
+        del ev_len_out_gpu #Removes memory used from the GPU 
+        #print("Memory utilization after deletion: " + str(tf.config.experimental.get_memory_info('GPU:0')["current"]))
         self.replace_nans_w_noise(data_out,ev_len_out)
         if ret_noise:
             return data_out,noise
