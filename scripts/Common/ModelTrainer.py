@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from tensorflow.keras.optimizers import Adam,SGD
 from tensorflow.keras.models import clone_model
-
+import ipdb
 
 
 class ModelTrainer():
@@ -80,6 +80,7 @@ class ModelTrainer():
         self.train_losses=[];
         self.valid_losses=[];
         self.train_aug_losses=[];
+        #ipdb.set_trace();
         for n_epoch in range(self.n_epochs_max):
             print("=== Epoch:", n_epoch,"===")
             start_time = time.time()

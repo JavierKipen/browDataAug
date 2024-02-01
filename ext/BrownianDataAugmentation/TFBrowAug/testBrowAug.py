@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import time
-import pdb
+import ipdb
 import copy
 
 physical_devices = tf.config.list_physical_devices('GPU')
@@ -22,12 +22,16 @@ print("Computing output")
 start=time.time()
 
 data_out_gpu,ev_len_out=browAug.BrowAug(data_in=ev_data_array,noise=noise)
-print(tf.config.experimental.get_memory_info('GPU:0')["current"])
-data_out=tf.identity(data_out_gpu).cpu();
-del data_out_gpu
-print(tf.config.experimental.get_memory_info('GPU:0')["current"])
-end=time.time()
-print("Total Run time: " + str(end-start))
+#print(tf.config.experimental.get_memory_info('GPU:0')["current"])
+#data_out=tf.identity(data_out_gpu).cpu();
+#del data_out_gpu
+#print(tf.config.experimental.get_memory_info('GPU:0')["current"])
+#end=time.time()
+#print("Total Run time: " + str(end-start))
+
+ipdb.set_trace()
+data_out=data_out_gpu.numpy();
+
 
 ev_len_out=ev_len_out.numpy();
 data_out=data_out.reshape((-1,length))
