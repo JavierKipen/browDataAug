@@ -12,15 +12,15 @@ from datetime import datetime
 import ipdb
 
 physical_devices = tf.config.list_physical_devices('GPU')
-tf.config.set_visible_devices(physical_devices[0], 'GPU')
+tf.config.set_visible_devices(physical_devices[3], 'GPU')
 
 
 n_runs=50;
 n1=512;n2=512;
 brow_aug=0.9;
-use_brow_aug=False;
+use_brow_aug=True;
 
-lr=5e-4;batch_size=256; #Should keep them constant for all the runs to make a fair comparison
+lr=1e-3;batch_size=256; #Should keep them constant for all the runs to make a fair comparison
 
 #ipdb.set_trace()
 lr_str="{:.0E}".format(lr);
