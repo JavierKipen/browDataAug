@@ -12,23 +12,32 @@ from datetime import datetime
 import ipdb
 
 physical_devices = tf.config.list_physical_devices('GPU')
-tf.config.set_visible_devices(physical_devices[3], 'GPU')
+tf.config.set_visible_devices(physical_devices[1], 'GPU')
 
-n_runs=100;
+n_runs=150;
 n1=2048;n2=1024;
 brow_aug=0.9;
 use_brow_aug=True;
+red_train=True;
 
-lr=1e-3;batch_size=256; #Should keep them constant for all the runs to make a fair comparison
+lr=5e-4;batch_size=256; #Should keep them constant for all the runs to make a fair comparison
 
 #ipdb.set_trace()
 lr_str="{:.0E}".format(lr);
-folder_es_train="../../results/CompareLRs/"+lr_str+"/";
+
+n_epochs=100; #100 epochs to check
+use_weights=False; #We oversample using augmentation to achieve higher accuracies.
+folder_res= "CompareLRsRed/" if red_train else "CompareLRs/";
+folder_es_train="../../results/"+folder_res+lr_str+"/" ;
+
+if red_train:
+    n_epochs=50;
+    use_weights=True; #weights should reduce considerably training time.
 
 if not os.path.exists(folder_es_train):
     os.makedirs(folder_es_train)# Create a new directory because it does not exist
 
-mt=ModelTrainer(brow_std=brow_aug,batch_size=batch_size,brow_aug_use=use_brow_aug,lr=lr,opt_aug=False,n_epochs_max=100,early_stopping_patience=101);
+mt=ModelTrainer(brow_std=brow_aug,batch_size=batch_size,brow_aug_use=use_brow_aug,lr=lr,opt_aug=False,n_epochs_max=n_epochs,early_stopping_patience=n_epochs+1,use_weights=use_weights);
 model=get_quipu_model(n_dense_1=n1,n_dense_2=n2);
 str_time=datetime.today().strftime('%Y%m%d_%H-%M-%S');
 if use_brow_aug:
