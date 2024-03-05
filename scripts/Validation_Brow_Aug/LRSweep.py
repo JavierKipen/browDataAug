@@ -12,13 +12,14 @@ from datetime import datetime
 import ipdb
 
 physical_devices = tf.config.list_physical_devices('GPU')
-tf.config.set_visible_devices(physical_devices[1], 'GPU')
+tf.config.set_visible_devices(physical_devices[0], 'GPU')
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 n_runs=150;
 n1=2048;n2=1024;
 brow_aug=0.9;
 use_brow_aug=True;
-red_train=True;
+red_train=False;
 
 lr=5e-4;batch_size=256; #Should keep them constant for all the runs to make a fair comparison
 
