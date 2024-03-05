@@ -39,6 +39,16 @@ class DataAugmentator():
         if self.noise_std > 0:
             X = self.addNoise( X, std = self.noise_std) 
         return X;
+    def all_augments_brow_stretch(self,X_train,brow_stretch_eq=0.05):
+        X = copy.deepcopy(X_train) # make copies
+        X = self.stretch_aug(X, std=brow_stretch_eq, probability=1)  ##Generates the stretch that generates the brownian aug.
+        if self.magnitude_std > 0:
+            X = self.magnitude_aug(X, std = self.magnitude_std) 
+        if self.stretch_std > 0 :
+            X = self.stretch_aug(X, std=self.stretch_std, probability=self.stretch_prob) if self.opt_aug==False else self.stretch_aug_v2(X, stretch_std_val = self.stretch_std); ##Tested with profiler and stretch_aug_v2 is faster + augments all .
+        if self.noise_std > 0:
+            X = self.addNoise( X, std = self.noise_std) 
+        return X;
     def quipu_augment(self,X_train):
         X = copy.deepcopy(X_train) # make copies
         X = self.magnitude_aug(X, std = self.magnitude_std) 

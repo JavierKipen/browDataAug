@@ -19,7 +19,7 @@ import ipdb
 
 
 class ModelTrainer():
-    def __init__(self,n_epochs_max=100,lr = 1e-3,batch_size=128,early_stopping_patience=18,brow_std=0.9,brow_aug_use=True,opt_aug=False,use_weights=False,track_losses=False, optimizer="Adam",momentum=None): #Opt_aug still has bugs, have to check
+    def __init__(self,n_epochs_max=100,lr = 1e-3,batch_size=128,early_stopping_patience=18,brow_std=0.9,brow_aug_use=True,opt_aug=False,use_weights=False,track_losses=False, optimizer="Adam",momentum=None,check_stretch_brow=False): #Opt_aug still has bugs, have to check
         self.dl=DataLoader();
         self.da=DataAugmentator(brow_std=brow_std,opt_aug=opt_aug);
         self.shapeX = (-1, QUIPU_LEN_CUT,1); self.shapeY = (-1, QUIPU_N_LABELS);
@@ -35,6 +35,7 @@ class ModelTrainer():
         self.track_losses=track_losses;
         self.optimizer=optimizer;
         self.momentum=momentum;
+        self.check_str_brow=check_stretch_brow;
     def num_list_to_str(self,num_list):
         return '[{:s}]'.format(' '.join(['{:.3f}'.format(x) for x in num_list]))
     def crossval_es(self,model_base,n_runs=20,data_folder='../results/QuipuTrainedWithES.csv',save_each_row=False):
@@ -84,7 +85,10 @@ class ModelTrainer():
         for n_epoch in range(self.n_epochs_max):
             print("=== Epoch:", n_epoch,"===")
             start_time = time.time()
-            X= self.da.all_augments(X_train) if self.brow_aug_use else self.da.quipu_augment(X_train);
+            if self.check_str_brow:
+                X= self.da.all_augments_brow_stretch(X_train);
+            else:
+                X= self.da.all_augments(X_train) if self.brow_aug_use else self.da.quipu_augment(X_train);
             preparation_time = time.time() - start_time
             # Fit the model
             out_history = model.fit( 
