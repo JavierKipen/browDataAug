@@ -125,6 +125,33 @@ def dataset_split(allDatasets,min_perc=4,max_perc=15): ## 4% because 010 only ca
     
     return trainSet,testSet
 
+#Divides the dataset as it was done in quipus code.
+def dataset_split_as_quipu(allDatasets): 
+    
+    # final selection: different from previous one - use this only after picking the final model
+    testSetIndex = [
+        # barcode, nanopore
+        ('000', 6),
+        ('001', 26),
+        ('010', 1159),
+        ('011', 35),  # unbound
+        ('011', 32),  # bound
+        ('100', 1933),
+        ('101', 30),
+        ('110', 12),
+        ('111', 14)
+    ]
+
+    
+    testSetSelection = allDatasets[["barcode", "nanopore"]]\
+                            .apply(tuple, axis = 1)\
+                            .isin(testSetIndex)
+    
+    testSet = allDatasets[ testSetSelection ]
+    trainSet = allDatasets[ ~ testSetSelection ]
+    
+    return trainSet,testSet
+
 def show_porcentages(trainSet,testSet):
     Y_train_barcode = np.vstack( trainSet.barcode.values )
     Y_test_barcode = np.vstack( testSet.barcode.values )

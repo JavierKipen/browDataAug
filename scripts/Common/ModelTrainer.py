@@ -120,10 +120,10 @@ class ModelTrainer():
         train_acc,valid_acc,test_acc=self.eval_model_and_print_results(model,X_train,Y_train,X_valid,Y_valid,X_test,Y_test)
         return train_acc, valid_acc, test_acc, n_epoch
     ##Quipu base code to compare
-    def quipu_def_train(self,model,n_epochs=60,with_brow_aug=False):
+    def quipu_def_train(self,model,n_epochs=60,with_brow_aug=False,sameQuipuTestSet=False):
         #tensorboard, history = resetHistory()
         lr = 1e-3
-        X_train,X_valid,Y_train,Y_valid,X_test,Y_test=self.dl.get_datasets_numpy_quipu();
+        X_train,X_valid,Y_train,Y_valid,X_test,Y_test=self.dl.get_datasets_numpy_quipu(sameQuipuTestSet=sameQuipuTestSet);
         model.compile(
             loss = 'categorical_crossentropy', 
             optimizer = Adam(lr=0.001),

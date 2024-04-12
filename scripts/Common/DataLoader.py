@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 from params import QUIPU_DATA_FOLDER,QUIPU_VALIDATION_PROP_DEF,QUIPU_N_LABELS
-from DatasetFuncs import allDataset_loader,dataset_split
+from DatasetFuncs import allDataset_loader,dataset_split,dataset_split_as_quipu
 import ipdb
 
 class DataLoader():
@@ -19,8 +19,11 @@ class DataLoader():
         X_train,X_valid,Y_train,Y_valid=self.divide_numpy_ds(X_train,Y_train,1-validation_prop,keep_perc_classes=True,repeat_classes=repeat_classes);
         return X_train,X_valid,Y_train,Y_valid,X_test,Y_test
         
-    def get_datasets_numpy_quipu(self,validation_prop=QUIPU_VALIDATION_PROP_DEF): #Gets the numpy arrays for the NN as it is done in Quipus code, with train, validation and test sets
-        df_train,df_test=dataset_split(self.df_cut,min_perc=self.min_perc_test,max_perc=self.max_perc_test);
+    def get_datasets_numpy_quipu(self,validation_prop=QUIPU_VALIDATION_PROP_DEF,sameQuipuTestSet=False): #Gets the numpy arrays for the NN as it is done in Quipus code, with train, validation and test sets
+        if sameQuipuTestSet:
+            df_train,df_test=self.getQuipuDfSplit();
+        else:
+            df_train,df_test=dataset_split(self.df_cut,min_perc=self.min_perc_test,max_perc=self.max_perc_test);
         X_train,Y_train=self.quipu_df_to_numpy(df_train);X_test,Y_test=self.quipu_df_to_numpy(df_test);
         X_train,X_valid,Y_train,Y_valid=self.divide_numpy_ds(X_train,Y_train,1-validation_prop);
         return X_train,X_valid,Y_train,Y_valid,X_test,Y_test
@@ -74,6 +77,9 @@ class DataLoader():
         Y_valid_labels=np.argwhere(Y_valid==1)[:,1]
         values, counts = np.unique(Y_train_labels, return_counts=True)
         values, counts = np.unique(Y_valid_labels, return_counts=True)
+    def getQuipuDfSplit(self): ##Assumes self.df_cut loaded, then splits it in train and test as in Quipu code.
+        df_train,df_test=dataset_split_as_quipu(self.df_cut);
+        return df_train,df_test;
 
 if __name__ == "__main__":
     dl=DataLoader();
