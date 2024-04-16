@@ -18,14 +18,14 @@ tf.config.set_visible_devices(physical_devices[0], 'GPU')
 
 #ipdb.set_trace()
 
-subfolder_res= "QuipuAsNotebook/";
+subfolder_res= "Reproduction/QuipuAsNotebook/";
 path_results="../../results/"+subfolder_res;
 
-n_runs=10;
-n_epochs=60;
+n_runs=1000;
+n_epochs=200;
 
-if not os.path.exists(folder_es_train):
-    os.makedirs(folder_es_train)# Create a new directory because it does not exist
+if not os.path.exists(path_results):
+    os.makedirs(path_results)# Create a new directory because it does not exist
 
 mt=ModelTrainer();
 model_base=get_quipu_model();
