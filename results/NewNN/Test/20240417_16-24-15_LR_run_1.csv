@@ -1,0 +1,2 @@
+train_acc,valid_acc,test_acc,train_loss,valid_loss,train_aug_loss
+0.125,0.12297078222036362,0.12308254092931747,[2.0795 2.0795],[2.0831 2.0772],[2.0816 2.0795]

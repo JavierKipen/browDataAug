@@ -22,7 +22,7 @@ class DataLoader():
         X_train,X_valid,Y_train,Y_valid=self.divide_numpy_ds(X_train,Y_train,1-validation_prop,keep_perc_classes=True,repeat_classes=repeat_classes);
         return X_train,X_valid,Y_train,Y_valid,X_test,Y_test
 
-def get_datasets_numpy_tuning_model(self,tuning_valid_perc=0.1,tuning_test_perc=0.1,repeat_classes=True,divide_for_tuning=True): #Gets the datasets for the tuning of the new neural network.
+    def get_datasets_numpy_tuning_model(self,tuning_valid_perc=0.1,tuning_test_perc=0.1,repeat_classes=True,divide_for_tuning=True): #Gets the datasets for the tuning of the new neural network.
         df_tuning,df_test=self.getQuipuDfSplit(); #Same train vs test of Quipu
         X_tuning,Y_tuning=self.quipu_df_to_numpy(df_tuning);X_test,Y_test=self.quipu_df_to_numpy(df_test);
         #We keep the final test separeted
@@ -102,4 +102,4 @@ if __name__ == "__main__":
     #X_train,X_valid,Y_train,Y_valid,X_test,Y_test=dl.get_datasets_numpy_quipu();
     X_train,X_valid,Y_train,Y_valid,X_test,Y_test=dl.get_datasets_numpy();
     dl.test_balanced_datasets(Y_train,Y_valid);
-    
+

@@ -20,7 +20,7 @@ def dump_config(filename,modelTrainer,model,modelInfo, comment=""):
         if comment != "":
             f.write("Comment:"+ comment + "\n")
         f.write("---Data augmentation config:---\n")
-        f.write(get_attribute_values_str(["stretch_std","magnitude_std","stretch_prob","noise_std","brow_std","opt_aug"],modelTrainer.da))
+        f.write(get_attribute_values_str(["stretch_rel_std","magnitude_rel_std","fill_noise_std","noise_std","brow_std","apply_brownian_aug"],modelTrainer.da))
         f.write("---Data train config:---\n")
         f.write(get_attribute_values_str(["n_epochs_max","lr","batch_size","early_stopping_patience","brow_aug_use","use_weights"],modelTrainer))
         f.write("---Data load config:---\n")
