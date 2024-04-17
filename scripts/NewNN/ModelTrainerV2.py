@@ -12,7 +12,7 @@ import cupy as cp
 
 
 class ModelTrainerV2():
-    def __init__(self,n_epochs_max=100,lr = 1e-3,batch_size=128,early_stopping_patience=18,brow_aug_use=True,track_losses=False, optimizer="Adam",momentum=None): 
+    def __init__(self,n_epochs_max=100,lr = 1e-3,batch_size=128,early_stopping_patience=18,brow_aug_use=True,track_losses=False, optimizer="Adam",momentum=None,validation_perc=0.1): 
         self.dl=DataLoader();
         self.da=DataAugmentatorV2();
         self.shapeX = (-1, QUIPU_LEN_CUT,1); self.shapeY = (-1, QUIPU_N_LABELS);
@@ -27,6 +27,7 @@ class ModelTrainerV2():
         self.track_losses=track_losses;
         self.optimizer=optimizer;
         self.momentum=momentum;
+        self.validation_perc=validation_perc;
 
     def train_es(self,model,tuning=True): #Runs training with early stopping. When tuning=true uses tuning test set, otherwise uses final test set.
         X_train,X_valid,Y_train,Y_valid,X_test,Y_test=self.dl.get_datasets_numpy_tuning_model(divide_for_tuning=tuning); #Gets the oversampled dataset (test set is same as quipu when not tuning, if not is separated from the not test data)
@@ -71,6 +72,9 @@ class ModelTrainerV2():
                 break
         train_acc,valid_acc,test_acc=self.eval_model_and_print_results(model,X_train,Y_train,X_valid,Y_valid,X_test,Y_test)
         return train_acc, valid_acc, test_acc, n_epoch
+    
+    def reset_history(self):
+        self.train_losses=[];self.valid_losses=[];self.train_aug_losses=[]; #To keep track of the losses    
     
     def eval_model_and_print_results(self,model,X_train,Y_train,X_valid,Y_valid,X_test,Y_test):
         print("       [ loss , accuracy ]")
