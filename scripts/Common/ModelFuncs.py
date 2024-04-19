@@ -9,11 +9,12 @@ import tensorflow as tf
 from tensorflow.keras import layers
 from tensorflow.keras import regularizers
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Dense, Activation, Dropout, Flatten, Input, Embedding,BatchNormalization
+from tensorflow.keras.layers import Dense, Activation, Dropout, Flatten, Input, Embedding,BatchNormalization, Softmax,Dot, Attention
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Embedding, AveragePooling1D
 from params import QUIPU_LEN_CUT,QUIPU_N_LABELS
 from tensorflow.keras.regularizers import l2
+import ipdb
 
 ##### QUIPUNET ###############
 def get_quipu_model(n_filters_block_1=64,kernel_size_block_1=7,dropout_intermediate_blocks=0.25,
@@ -89,7 +90,7 @@ def quipu_block_skip_con(x,n_filters,kernel_size,pool_size,dropout_val,activatio
     out = MaxPooling1D(pool_size=pool_size)(out)
     out = Dropout(dropout_val)(out)
     return out
-    
+
 ##### ResNetBased ###############
 class  ModelInfo:
     def __init__(self,model_type="ResNet",filter_size=2,block_layers=[1,1],dense_1=None,dense_2=None,dropout_end=0,dropout_blocks=0,kernels_blocks=0,activation="relu"):
@@ -174,9 +175,71 @@ def resnet_conv_block(x,filter_size,kernel_size=3,kernel_regularizer=None,activa
     out = Activation(activation_str)(out)
     return out
 
-##### QUIPUNET WITH SKIP CONNECTIONS ###########
+# +
+##########AttResQuipu: Similar to s2snet with residual connections
+
+def self_attention_block(x,filter_size,kernel_size=7,activation_str='relu'):
+    conv_block = Conv1D(filter_size, kernel_size, padding = 'same',activation=activation_str)(x)
+    conv_block = Conv1D(filter_size, kernel_size, padding = 'same',activation=activation_str)(conv_block)
+    #conv_probs = Activation('softmax')(conv_block)
+    #Dot(axes=1)([x, conv_probs])
+    #ipdb.set_trace()
+    
+    return Attention()([conv_block, x,conv_block])
+
+def get_AttResQuipu(filter_size=64, block_layers=[2,2,2], init_conv_kernel=7,init_pool_size=3,init_conv=False, end_pool_size=2,dense_1=512,dropout_end=0.4,l2reg=None,dense_2=None,activation_fnc='relu',dropout_block=None):
+    modelInfo=ModelInfo(model_type="AttRes",filter_size=filter_size,block_layers=block_layers,dense_1=dense_1,dense_2=dense_2,dropout_end=dropout_end,dropout_blocks=dropout_block,activation=activation_fnc);
+    kernel_regularizer=None if (l2reg is None) else l2(l2reg);
+    input_trace = Input(shape=(QUIPU_LEN_CUT,1), dtype='float32', name='input')
+    
+    if init_conv:
+        x = Conv1D(filter_size, init_conv_kernel, padding = 'same',strides=2,kernel_regularizer=kernel_regularizer)(input_trace)
+        x = BatchNormalization()(x)
+        x = Activation(activation_fnc)(x)
+        x = MaxPooling1D(pool_size=init_pool_size,strides=2, padding = 'same')(x)
+    else:
+        #Two residual conv 3x3 blocks to emulate kernel of 7, no pooling!
+        x = resnet_identity_block(input_trace, filter_size,kernel_regularizer=kernel_regularizer,activation_str=activation_fnc,dropout=dropout_block)
+        x = resnet_identity_block(x, filter_size,kernel_regularizer=kernel_regularizer,activation_str=activation_fnc,dropout=dropout_block)
+    
+    
+    x = self_attention_block(x,filter_size,activation_str=activation_fnc)
+    
+    #filter_size = filter_size*2
+    # Step 3 Add the Resnet Blocks
+    for i in range(len(block_layers)):
+        if i == 0:
+            # For sub-block 1 Residual/Convolutional block not needed
+            for j in range(block_layers[i]):
+                x = resnet_identity_block(x, filter_size,kernel_regularizer=kernel_regularizer,activation_str=activation_fnc,dropout=dropout_block)
+        else:
+            # One Residual/Convolutional B
+            filter_size = filter_size*2# The filter size will go on increasing by a factor of 2
+            x = resnet_conv_block(x, filter_size,kernel_regularizer=kernel_regularizer,activation_str=activation_fnc,dropout=dropout_block)
+            for j in range(block_layers[i] - 1):
+                x = resnet_identity_block(x, filter_size,kernel_regularizer=kernel_regularizer,activation_str=activation_fnc,dropout=dropout_block)
+    
+    x = AveragePooling1D(pool_size=end_pool_size, padding = 'same')(x)
+    x=Flatten()(x)
+    
+    if dense_1 is not None:
+        x=Dense(dense_1, activation=activation_fnc,kernel_regularizer=kernel_regularizer)(x)
+        x=Dropout(dropout_end)(x)
+    if dense_2 is not None:
+        x=Dense(dense_2, activation=activation_fnc,kernel_regularizer=kernel_regularizer)(x)
+        x=Dropout(dropout_end)(x)
+    if (dense_1 is None) and (dense_2 is None):
+        x=Dropout(dropout_end)(x)
+
+    output_barcode = Dense(QUIPU_N_LABELS, activation='softmax', name='output_barcode')(x)
+    model = Model(inputs=input_trace, outputs=output_barcode)
+    return model,modelInfo;
+# -
+
+# #### QUIPUNET WITH SKIP CONNECTIONS ###########
 
 if __name__ == "__main__":
-    model,modelInfo=get_quipu_skipCon_model(filter_size=64,kernels_blocks=[7,5,3],dropout_blocks=0.25,n_dense_1=512,n_dense_2=512,dropout_final=0.4,pool_size=3,activation="relu");
+    #model,modelInfo=get_quipu_skipCon_model(filter_size=64,kernels_blocks=[7,5,3],dropout_blocks=0.25,n_dense_1=512,n_dense_2=512,dropout_final=0.4,pool_size=3,activation="relu");
+    model,modelInfo=get_AttResQuipu();
     model.summary();
 

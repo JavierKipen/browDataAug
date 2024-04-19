@@ -3,7 +3,7 @@ import numpy as np
 
 
 class DataAugmenterV2():
-    def __init__(self,brow_std=0.9,magnitude_rel_std=0.05,stretch_rel_std=0.05,noise_std=0.05,
+    def __init__(self,brow_std=0.9,magnitude_rel_std=0.05,stretch_rel_std=0.02,noise_std=0.04,
                  fill_noise_std=0.008,apply_brownian_aug=True,gpu_computation=True):
         ##Saves parameters for the augmentations
         self.brow_std=brow_std;

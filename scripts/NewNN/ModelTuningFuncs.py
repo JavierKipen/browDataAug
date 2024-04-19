@@ -26,7 +26,7 @@ def dump_config(filename,modelTrainer,model,modelInfo, comment=""):
             if modelInfo.model_type=="ResNet":
                 f.write(get_attribute_values_str(["filter_size","block_layers","dense_1","dense_2","dropout_end","dropout_blocks","activation"],modelInfo))
             if modelInfo.model_type=="QuipuSkip":
-                f.write(get_attribute_values_str(["filter_size","kernels_blocks","dense_1","dense_2","dropout_val","activation"],modelInfo))
+                f.write(get_attribute_values_str(["filter_size","kernels_blocks","dense_1","dense_2","dropout_end","dropout_blocks","activation"],modelInfo))
         model.summary(print_fn=lambda x: f.write(x + '\n'))
 
 def crossval_run_w_notes(modelTrainer,model_base,modelInfo,out_folder,comment="",title_file="",n_runs=20,tuning=True):
