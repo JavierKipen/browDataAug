@@ -6,7 +6,7 @@ sys.path.append(path_common) #Adds common path to import the python files
 
 
 from ModelTrainerV2 import ModelTrainerV2;
-from ModelFuncs import get_resnet_model,get_quipu_model,get_quipu_skipCon_model,get_AttResQuipu,ModelInfo
+from ModelFuncs import get_resnet_model,get_quipu_model,get_quipu_skipCon_model,get_AttResQuipu,ModelInfo,get_quipu_AttRes_model
 import operator
 from datetime import datetime
 import tensorflow as tf
@@ -30,7 +30,7 @@ if not os.path.exists(out_folder):
     os.makedirs(out_folder)# Create a new directory because it does not exist
 
 #Configs
-comment="Quipu but we add residual connections"
+comment="Quipu with residual and attention, increasing dropout to see if it gets better generalization"
 lr=1e-3;
 batch_size=256;
 n_epochs=50;
@@ -45,9 +45,10 @@ mt=ModelTrainerV2(lr=lr,batch_size=batch_size,track_losses=True,n_epochs_max=n_e
 # -
 
 #model,modelInfo=get_AttResQuipu(dropout_block=0.1,dense_2=512)
-model,modelInfo=get_quipu_skipCon_model(filter_size=64,kernels_blocks=[7,5,3],dropout_blocks=0.25,n_dense_1=512,n_dense_2=512,dropout_final=0.4,pool_size=3,activation="relu")
+#model,modelInfo=get_quipu_skipCon_model(filter_size=64,kernels_blocks=[7,5,3],dropout_blocks=0.25,n_dense_1=512,n_dense_2=512,dropout_final=0.4,pool_size=3,activation="relu")
+model,modelInfo=get_quipu_AttRes_model();
 
 model.summary();
 
 
-crossval_run_w_notes(mt,model,modelInfo,out_folder, title_file="QuipuRes",n_runs=n_runs,comment=comment)
+crossval_run_w_notes(mt,model,modelInfo,out_folder, title_file="QuipuAttResD",n_runs=n_runs,comment=comment)

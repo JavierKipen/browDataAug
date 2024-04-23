@@ -26,13 +26,13 @@ physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 out_folder_newNN="../../results/NewNN/" #Result general folder
-out_folder=out_folder_newNN+"Quipu/"; ##Corresponding subfolder
+out_folder=out_folder_newNN+"QuipuModif/"; ##Corresponding subfolder
 
 if not os.path.exists(out_folder):
     os.makedirs(out_folder)# Create a new directory because it does not exist
 
 #Configs
-comment="Reproducing best quipuExt with brownian"
+comment="Running Quipu with skip connections"
 tuning=False; #This makes it run on tuning df, and use the quipus test dataset
 lr=5e-4;
 batch_size=256;
@@ -45,13 +45,18 @@ mt=ModelTrainerV2(lr=lr,batch_size=batch_size,track_losses=True,n_epochs_max=n_e
 ##Extra configs
 #mt.da.stretch_rel_std=0.08;
 #mt.da.brow_std=0.0001; #No brownian aug.
-# -
 
+# +
 #model,modelInfo=get_AttResQuipu(dropout_block=0.1,dense_2=512)
-model=get_quipu_model(n_dense_1=2048,n_dense_2=1024);
-modelInfo=ModelInfo(model_type="QuipuExt");
+
+#model=get_quipu_model(n_dense_1=2048,n_dense_2=1024);
+#modelInfo=ModelInfo(model_type="QuipuRes");
+
+model,modelInfo=get_quipu_skipCon_model();
+
+# -
 
 model.summary();
 
 
-crossval_run_w_notes(mt,model,modelInfo,out_folder, title_file="QuipuExtBrowFinal",n_runs=n_runs,comment=comment,tuning=tuning)
+crossval_run_w_notes(mt,model,modelInfo,out_folder, title_file="QuipuResFinal",n_runs=n_runs,comment=comment,tuning=tuning)

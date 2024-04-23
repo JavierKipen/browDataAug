@@ -174,7 +174,7 @@ class ModelTrainer():
         return train_acc,valid_acc,test_acc
 
         
-    
+
 if __name__ == "__main__":
     import tensorflow as tf
     physical_devices = tf.config.list_physical_devices('GPU')

@@ -5,7 +5,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential, Model
 
 
-#Testing self attention block to see if it works
+# Testing self attention block to see if it works
 
 physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.set_visible_devices(physical_devices[1], 'GPU')

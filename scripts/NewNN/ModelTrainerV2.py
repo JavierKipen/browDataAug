@@ -46,6 +46,7 @@ class ModelTrainerV2():
             start_time = time.time()
             X_train_aug=self.da.augment(X_train_cupy); #Augments the data
             X=X_train_aug.get(); #Converts back to numpy
+            del X_train_aug; #Erase cupy array, hope it works
             preparation_time = time.time() - start_time
             # Fit the model
             out_history = model.fit(x = X.reshape(self.shapeX), y = Y_train.reshape(self.shapeY), batch_size=self.batch_size, shuffle = True, epochs=1,verbose = 1 )

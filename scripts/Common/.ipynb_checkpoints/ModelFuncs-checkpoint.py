@@ -9,7 +9,7 @@ import tensorflow as tf
 from tensorflow.keras import layers
 from tensorflow.keras import regularizers
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Dense, Activation, Dropout, Flatten, Input, Embedding,BatchNormalization, Softmax,Dot, Attention
+from tensorflow.keras.layers import Dense, Activation, Dropout, Flatten, Input, Embedding,BatchNormalization, Softmax,Dot, Attention,Multiply
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Embedding, AveragePooling1D
 from params import QUIPU_LEN_CUT,QUIPU_N_LABELS
@@ -178,14 +178,14 @@ def resnet_conv_block(x,filter_size,kernel_size=3,kernel_regularizer=None,activa
 # +
 ##########AttResQuipu: Similar to s2snet with residual connections
 
-def self_attention_block(x,filter_size,kernel_size=7,activation_str='relu'):
-    conv_block = Conv1D(filter_size, kernel_size, padding = 'same',activation=activation_str)(x)
-    conv_block = Conv1D(filter_size, kernel_size, padding = 'same',activation=activation_str)(conv_block)
-    #conv_probs = Activation('softmax')(conv_block)
-    #Dot(axes=1)([x, conv_probs])
-    #ipdb.set_trace()
+def self_attention_block(x,filter_size,kernel_size=9,activation_str='relu'):
+    conv_block = Conv1D(filter_size, kernel_size, padding = 'same')(x)
+    conv_block = BatchNormalization(axis=1)(conv_block)
+    conv_block = Activation(activation_str)(conv_block)
+    conv_block = Conv1D(filter_size, kernel_size, padding = 'same')(conv_block)
+    conv_probs = Softmax(axis=1)(conv_block)
     
-    return Attention()([conv_block, x,conv_block])
+    return Multiply()([conv_probs, x])
 
 def get_AttResQuipu(filter_size=64, block_layers=[2,2,2], init_conv_kernel=7,init_pool_size=3,init_conv=False, end_pool_size=2,dense_1=512,dropout_end=0.4,l2reg=None,dense_2=None,activation_fnc='relu',dropout_block=None):
     modelInfo=ModelInfo(model_type="AttRes",filter_size=filter_size,block_layers=block_layers,dense_1=dense_1,dense_2=dense_2,dropout_end=dropout_end,dropout_blocks=dropout_block,activation=activation_fnc);
@@ -234,6 +234,28 @@ def get_AttResQuipu(filter_size=64, block_layers=[2,2,2], init_conv_kernel=7,ini
     output_barcode = Dense(QUIPU_N_LABELS, activation='softmax', name='output_barcode')(x)
     model = Model(inputs=input_trace, outputs=output_barcode)
     return model,modelInfo;
+
+def get_quipu_AttRes_model(filter_size=64,kernels_blocks=[7,5,3],dropout_blocks=0.25,n_dense_1=512,n_dense_2=512,dropout_final=0.4,pool_size=3,activation="relu"):
+    modelInfo=ModelInfo(model_type="QuipuSkip",filter_size=filter_size,kernels_blocks=kernels_blocks,dense_1=n_dense_1,dense_2=n_dense_2,dropout_end=dropout_final,dropout_blocks=dropout_blocks,activation=activation);
+    input_trace = Input(shape=(QUIPU_LEN_CUT,1), dtype='float32', name='input')
+    x = Conv1D(filter_size, 7, padding = 'same')(input_trace)
+    x = BatchNormalization(axis=1)(x)
+    x = Activation(activation)(x)
+    x=self_attention_block(x,filter_size,activation_str='relu')
+    
+    for i in range(len(kernels_blocks)):
+        x = quipu_block_skip_con(x,filter_size,kernels_blocks[i],pool_size,dropout_blocks,activation)
+        filter_size*=2;
+    x = Flatten()(x)
+    x = Dense(n_dense_1, activation=activation)(x)
+    x = Dropout(dropout_final)(x)
+    x = Dense(n_dense_2, activation=activation)(x)
+    x = Dropout(dropout_final)(x)
+    output_barcode = Dense(QUIPU_N_LABELS, activation='softmax', name='output_barcode')(x)
+    model = Model(inputs=input_trace, outputs=output_barcode)
+    return model,modelInfo;
+
+
 # -
 
 # #### QUIPUNET WITH SKIP CONNECTIONS ###########
