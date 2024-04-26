@@ -3,7 +3,7 @@ import numpy as np
 import os
 from params import QUIPU_DATA_FOLDER,QUIPU_VALIDATION_PROP_DEF,QUIPU_N_LABELS
 from DatasetFuncs import allDataset_loader,dataset_split,dataset_split_as_quipu
-import ipdb
+#import ipdb
 
 class DataLoader():
     def __init__(self,min_perc_test=4,max_perc_test=15,reduce_dataset_samples=None):
@@ -35,6 +35,24 @@ class DataLoader():
         else:
             X_train,X_valid,Y_train,Y_valid=self.divide_numpy_ds(X_tuning,Y_tuning,1-tuning_valid_perc,keep_perc_classes=True,repeat_classes=True); #Oversamples in train to balance classes!
             return X_train,X_valid,X_test,Y_train,Y_valid,Y_test #To evaluate finally our model, we need the test dataset that was established in quipu, but we get a random validation to know when we are overfitting.
+    
+    def get_datasets_numpy_no_valid(self,repeat_classes=True):
+        df_tuning,df_test=self.getQuipuDfSplit(); #Same train vs test of Quipu
+        X_tuning,Y_tuning = self.quipu_df_to_numpy(df_tuning);X_test,Y_test=self.quipu_df_to_numpy(df_test);
+        X_tuning,Y_tuning = self.oversample_dataset(X_tuning,Y_tuning);
+        return X_tuning,X_test,Y_tuning,Y_test
+    
+    def oversample_dataset(self,X,Y):
+        
+        idxs=[];
+        for i in range(QUIPU_N_LABELS):
+            all_idxs_code=np.argwhere(np.argwhere(Y==1)[:,1]==i)[:,0] #All indexes of that code. Inside argwhere is to get the label from the one hot encoding.
+            np.random.shuffle(all_idxs_code)
+            idxs.append(all_idxs_code);
+        idxs=self.repeat_reads_to_balance(idxs)
+        idxs=np.concatenate(idxs);
+        X_oversampled=X[idxs,:];Y_oversampled=Y[idxs,:];
+        return X_oversampled,Y_oversampled
     def get_datasets_numpy_quipu(self,validation_prop=QUIPU_VALIDATION_PROP_DEF,sameQuipuTestSet=False): #Gets the numpy arrays for the NN as it is done in Quipus code, with train, validation and test sets
         if sameQuipuTestSet:
             df_train,df_test=self.getQuipuDfSplit();

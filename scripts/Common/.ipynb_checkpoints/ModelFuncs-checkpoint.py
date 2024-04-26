@@ -19,32 +19,32 @@ import ipdb
 ##### QUIPUNET ###############
 def get_quipu_model(n_filters_block_1=64,kernel_size_block_1=7,dropout_intermediate_blocks=0.25,
                     n_filters_block_2=128,kernel_size_block_2=5,n_filters_block_3=256,kernel_size_block_3=3,
-                    n_dense_1=512,n_dense_2=512,dropout_final=0.4):
+                    n_dense_1=512,n_dense_2=512,dropout_final=0.4,axis=1):
     input_trace = Input(shape=(QUIPU_LEN_CUT,1), dtype='float32', name='input')
 
     x = Conv1D(n_filters_block_1, kernel_size_block_1, padding="same")(input_trace)
-    x = layers.BatchNormalization(axis=1)(x)
+    x = layers.BatchNormalization(axis=axis)(x)
     x = Activation('relu')(x)
     x = Conv1D(n_filters_block_1, kernel_size_block_1, padding="same")(x)
-    x = layers.BatchNormalization(axis=1)(x) 
+    x = layers.BatchNormalization(axis=axis)(x) 
     x = Activation('relu')(x)
     x = MaxPooling1D(pool_size=3)(x)
     x = Dropout(dropout_intermediate_blocks)(x)
     
     x = Conv1D(n_filters_block_2, kernel_size_block_2, padding="same")(x)
-    x = layers.BatchNormalization(axis=1)(x)
+    x = layers.BatchNormalization(axis=axis)(x)
     x = Activation('relu')(x)
     x = Conv1D(n_filters_block_2, kernel_size_block_2, padding="same")(x)
-    x = layers.BatchNormalization(axis=1)(x)
+    x = layers.BatchNormalization(axis=axis)(x)
     x = Activation('relu')(x)
     x = MaxPooling1D(pool_size=3)(x)
     x = Dropout(dropout_intermediate_blocks)(x)
     
     x = Conv1D(n_filters_block_3, kernel_size_block_3, padding="same")(x)
-    x = layers.BatchNormalization(axis=1)(x)
+    x = layers.BatchNormalization(axis=axis)(x)
     x = Activation('relu')(x)
     x = Conv1D(n_filters_block_3, kernel_size_block_3, padding="same")(x)
-    x = layers.BatchNormalization(axis=1)(x)
+    x = layers.BatchNormalization(axis=axis)(x)
     x = Activation('relu')(x)
     x = MaxPooling1D(pool_size=3)(x)
     x = Dropout(dropout_intermediate_blocks)(x)
@@ -62,10 +62,16 @@ Total params: 15,671,512
 Trainable params: 15,667,472
 Non-trainable params: 4,040  When Ndense1=2048 Ndense2=1024. To know how many params to start resnets with. 
 '''
-def get_quipu_skipCon_model(filter_size=64,kernels_blocks=[7,5,3],dropout_blocks=0.25,n_dense_1=512,n_dense_2=512,dropout_final=0.4,pool_size=3,activation="relu"):
+def get_quipu_skipCon_model(filter_size=64,kernels_blocks=[7,5,3],dropout_blocks=0.25,n_dense_1=512,n_dense_2=512,dropout_final=0.4,pool_size=3,activation="relu",add_attention=False):
     modelInfo=ModelInfo(model_type="QuipuSkip",filter_size=filter_size,kernels_blocks=kernels_blocks,dense_1=n_dense_1,dense_2=n_dense_2,dropout_end=dropout_final,dropout_blocks=dropout_blocks,activation=activation);
     input_trace = Input(shape=(QUIPU_LEN_CUT,1), dtype='float32', name='input')
     x=input_trace;
+    if add_attention:
+        x = Conv1D(filter_size, 7, padding = 'same')(x);
+        x = BatchNormalization(axis=1)(x)
+        x = Activation(activation)(x)
+        x = self_attention_block(x,filter_size,activation_str=activation)
+    
     for i in range(len(kernels_blocks)):
         x = quipu_block_skip_con(x,filter_size,kernels_blocks[i],pool_size,dropout_blocks,activation)
         filter_size*=2;

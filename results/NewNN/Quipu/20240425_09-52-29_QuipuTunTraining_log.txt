@@ -1,0 +1,96 @@
+Comment:Quipu Tuning training(Epochs 100)
+---Data augmentation config:---
+magnitude_rel_std: 0.05
+stretch_rel_std: 0.02
+apply_brownian_aug: True
+noise_std: 0.04
+brow_std: 0.9
+fill_noise_std: 0.008
+---Data train config:---
+n_epochs_max: 100
+lr: 0.01
+batch_size: 256
+early_stopping_patience: 100
+brow_aug_use: True
+validation_perc: 0.1
+---Model summary:---
+Model: "model"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ input (InputLayer)          [(None, 700, 1)]          0         
+                                                                 
+ conv1d (Conv1D)             (None, 700, 64)           512       
+                                                                 
+ batch_normalization (Batch  (None, 700, 64)           2800      
+ Normalization)                                                  
+                                                                 
+ activation (Activation)     (None, 700, 64)           0         
+                                                                 
+ conv1d_1 (Conv1D)           (None, 700, 64)           28736     
+                                                                 
+ batch_normalization_1 (Bat  (None, 700, 64)           2800      
+ chNormalization)                                                
+                                                                 
+ activation_1 (Activation)   (None, 700, 64)           0         
+                                                                 
+ max_pooling1d (MaxPooling1  (None, 233, 64)           0         
+ D)                                                              
+                                                                 
+ dropout (Dropout)           (None, 233, 64)           0         
+                                                                 
+ conv1d_2 (Conv1D)           (None, 233, 128)          41088     
+                                                                 
+ batch_normalization_2 (Bat  (None, 233, 128)          932       
+ chNormalization)                                                
+                                                                 
+ activation_2 (Activation)   (None, 233, 128)          0         
+                                                                 
+ conv1d_3 (Conv1D)           (None, 233, 128)          82048     
+                                                                 
+ batch_normalization_3 (Bat  (None, 233, 128)          932       
+ chNormalization)                                                
+                                                                 
+ activation_3 (Activation)   (None, 233, 128)          0         
+                                                                 
+ max_pooling1d_1 (MaxPoolin  (None, 77, 128)           0         
+ g1D)                                                            
+                                                                 
+ dropout_1 (Dropout)         (None, 77, 128)           0         
+                                                                 
+ conv1d_4 (Conv1D)           (None, 77, 256)           98560     
+                                                                 
+ batch_normalization_4 (Bat  (None, 77, 256)           308       
+ chNormalization)                                                
+                                                                 
+ activation_4 (Activation)   (None, 77, 256)           0         
+                                                                 
+ conv1d_5 (Conv1D)           (None, 77, 256)           196864    
+                                                                 
+ batch_normalization_5 (Bat  (None, 77, 256)           308       
+ chNormalization)                                                
+                                                                 
+ activation_5 (Activation)   (None, 77, 256)           0         
+                                                                 
+ max_pooling1d_2 (MaxPoolin  (None, 25, 256)           0         
+ g1D)                                                            
+                                                                 
+ dropout_2 (Dropout)         (None, 25, 256)           0         
+                                                                 
+ flatten (Flatten)           (None, 6400)              0         
+                                                                 
+ dense (Dense)               (None, 512)               3277312   
+                                                                 
+ dropout_3 (Dropout)         (None, 512)               0         
+                                                                 
+ dense_1 (Dense)             (None, 512)               262656    
+                                                                 
+ dropout_4 (Dropout)         (None, 512)               0         
+                                                                 
+ output_barcode (Dense)      (None, 8)                 4104      
+                                                                 
+=================================================================
+Total params: 3999960 (15.26 MB)
+Trainable params: 3995920 (15.24 MB)
+Non-trainable params: 4040 (15.78 KB)
+_________________________________________________________________

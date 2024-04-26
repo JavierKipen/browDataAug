@@ -29,7 +29,7 @@ def dump_config(filename,modelTrainer,model,modelInfo, comment=""):
                 f.write(get_attribute_values_str(["filter_size","kernels_blocks","dense_1","dense_2","dropout_end","dropout_blocks","activation"],modelInfo))
         model.summary(print_fn=lambda x: f.write(x + '\n'))
 
-def crossval_run_w_notes(modelTrainer,model_base,modelInfo,out_folder,comment="",title_file="",n_runs=20,tuning=True):
+def crossval_run_w_notes(modelTrainer,model_base,modelInfo,out_folder,comment="",title_file="",n_runs=20,tuning=True,all_data=False):
 
     str_time=datetime.today().strftime('%Y%m%d_%H-%M-%S');
     log_path=out_folder+str_time+"_"+title_file+"_log.txt";
@@ -38,8 +38,13 @@ def crossval_run_w_notes(modelTrainer,model_base,modelInfo,out_folder,comment=""
     for i in range(n_runs):
         modelTrainer.reset_history();
         model=clone_model(model_base);
-        train_acc, valid_acc, test_acc, n_epoch=modelTrainer.train_es(model,tuning=tuning);
         run_name=out_folder+str_time+"_"+title_file+"_run_"+str(i) + ".csv";
-        init_data = [train_acc, valid_acc, test_acc, num_list_to_str(modelTrainer.train_losses), num_list_to_str(modelTrainer.valid_losses), num_list_to_str(modelTrainer.train_aug_losses)]
-        df_results = pd.DataFrame([init_data], columns=["train_acc","valid_acc","test_acc", "train_loss", "valid_loss", "train_aug_loss"]);
+        if all_data:
+            train_acc, test_acc, n_epoch=modelTrainer.train_w_all_data(model);
+            init_data = [train_acc, test_acc, num_list_to_str(modelTrainer.train_losses), num_list_to_str(modelTrainer.train_aug_losses)]
+            df_results = pd.DataFrame([init_data], columns=["train_acc","test_acc", "train_loss", "train_aug_loss"]);
+        else:
+            train_acc, valid_acc, test_acc, n_epoch=modelTrainer.train_es(model,tuning=tuning);
+            init_data = [train_acc, valid_acc, test_acc, num_list_to_str(modelTrainer.train_losses), num_list_to_str(modelTrainer.valid_losses), num_list_to_str(modelTrainer.train_aug_losses)]
+            df_results = pd.DataFrame([init_data], columns=["train_acc","valid_acc","test_acc", "train_loss", "valid_loss", "train_aug_loss"]);
         df_results.to_csv(run_name, index=False)
