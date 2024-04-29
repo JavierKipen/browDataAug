@@ -46,7 +46,7 @@ if not os.path.exists(out_folder):
 #Configs
 comment="Training QuipuRes final with lower validation perc, Another LR. RELU. Adding attention"
 tuning=False; #This makes it run on tuning df, and use the quipus test dataset
-lr=1e-4;
+lr=2e-4;
 batch_size=256;
 n_epochs=100;
 n_runs=500;
@@ -64,7 +64,7 @@ mt=ModelTrainerV2(lr=lr,batch_size=batch_size,track_losses=True,n_epochs_max=n_e
 #model=get_quipu_model();
 #modelInfo=ModelInfo(model_type="QuipuRes");
 
-model,modelInfo=get_quipu_skipCon_model(add_attention=True,filter_size=64,kernels_blocks=[7,7,5,3,3],dropout_blocks=0.25,n_dense_1=2048,n_dense_2=512,dropout_final=0.4,pool_size=3,activation="relu")
+model,modelInfo=get_quipu_skipCon_model(add_attention=True,filter_size=64,kernels_blocks=[7,7,5,3,3],dropout_blocks=0.25,n_dense_1=2048,n_dense_2=1024,dropout_final=0.4,pool_size=3,activation="relu")
 
 
 #model,modelInfo=get_quipu_skipCon_model();
