@@ -1,0 +1,6 @@
+bootstrap: localimage
+from: /apps/containers/TensorFlow/TensorFlow-2.14.0-NGC-23.11.sif
+
+%post
+    pip install tables
+    pip install ipdb

@@ -5,3 +5,4 @@ ext/BrownianDataAugmentation/TFBrowAug/browAug.cu.o
 scripts/__pycache__/
 scripts/.ipynb_checkpoints/
 scripts/Validation_Brow_Aug/.ipynb_checkpoints/
+*.keras

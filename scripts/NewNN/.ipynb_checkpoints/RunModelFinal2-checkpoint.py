@@ -38,13 +38,13 @@ tf.config.experimental.set_memory_growth(physical_devices[0], True) #Memory grow
 # -
 
 out_folder_newNN="../../results/NewNN/" #Result general folder
-out_folder=out_folder_newNN+"QuipuRes/"; ##Corresponding subfolder
+out_folder=out_folder_newNN+"Ablation/"; ##Corresponding subfolder
 
 if not os.path.exists(out_folder):
     os.makedirs(out_folder)# Create a new directory because it does not exist
 
 #Configs
-comment="Training QuipuRes final with lower validation perc, Another LR. RELU. Adding attention"
+comment="Ablation: Remove Brow and Att"
 tuning=False; #This makes it run on tuning df, and use the quipus test dataset
 lr=2e-4;
 batch_size=256;
@@ -53,10 +53,10 @@ n_runs=500;
 
 mt=ModelTrainerV2(lr=lr,batch_size=batch_size,track_losses=True,n_epochs_max=n_epochs,validation_perc=0.05);
 
-# +
 ##Extra configs
 #mt.da.stretch_rel_std=0.08;
-#mt.da.brow_std=0.0001; #No brownian aug.
+mt.da.apply_brownian_aug=False;
+mt.da.brow_std=0.0001; #No brownian aug.
 
 # +
 #model,modelInfo=get_AttResQuipu(dropout_block=0.1,dense_2=512)
@@ -64,7 +64,7 @@ mt=ModelTrainerV2(lr=lr,batch_size=batch_size,track_losses=True,n_epochs_max=n_e
 #model=get_quipu_model();
 #modelInfo=ModelInfo(model_type="QuipuRes");
 
-model,modelInfo=get_quipu_skipCon_model(add_attention=True,filter_size=64,kernels_blocks=[7,7,5,3,3],dropout_blocks=0.25,n_dense_1=2048,n_dense_2=1024,dropout_final=0.4,pool_size=3,activation="relu")
+model,modelInfo=get_quipu_skipCon_model(add_attention=False,filter_size=64,kernels_blocks=[7,7,5,3,3],dropout_blocks=0.25,n_dense_1=2048,n_dense_2=512,dropout_final=0.4,pool_size=3,activation="relu")
 
 
 #model,modelInfo=get_quipu_skipCon_model();
@@ -74,4 +74,4 @@ model,modelInfo=get_quipu_skipCon_model(add_attention=True,filter_size=64,kernel
 model.summary();
 
 
-crossval_run_w_notes(mt,model,modelInfo,out_folder, title_file="QuipuResAttLowV",n_runs=n_runs,comment=comment,tuning=tuning,all_data=False)
+crossval_run_w_notes(mt,model,modelInfo,out_folder, title_file="FinalRemAll",n_runs=n_runs,comment=comment,tuning=tuning,all_data=False,save_model=True)

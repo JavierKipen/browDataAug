@@ -29,11 +29,11 @@ def dump_config(filename,modelTrainer,model,modelInfo, comment=""):
                 f.write(get_attribute_values_str(["filter_size","kernels_blocks","dense_1","dense_2","dropout_end","dropout_blocks","activation"],modelInfo))
         model.summary(print_fn=lambda x: f.write(x + '\n'))
 
-def crossval_run_w_notes(modelTrainer,model_base,modelInfo,out_folder,comment="",title_file="",n_runs=20,tuning=True,all_data=False):
+def crossval_run_w_notes(modelTrainer,model_base,modelInfo,out_folder,comment="",title_file="",n_runs=20,tuning=True,all_data=False,save_model=False):
 
     str_time=datetime.today().strftime('%Y%m%d_%H-%M-%S');
     log_path=out_folder+str_time+"_"+title_file+"_log.txt";
-    
+    best_test_acc=0;
     dump_config(log_path,modelTrainer,model_base,modelInfo,comment=comment)
     for i in range(n_runs):
         modelTrainer.reset_history();
@@ -47,4 +47,8 @@ def crossval_run_w_notes(modelTrainer,model_base,modelInfo,out_folder,comment=""
             train_acc, valid_acc, test_acc, n_epoch=modelTrainer.train_es(model,tuning=tuning);
             init_data = [train_acc, valid_acc, test_acc, num_list_to_str(modelTrainer.train_losses), num_list_to_str(modelTrainer.valid_losses), num_list_to_str(modelTrainer.train_aug_losses)]
             df_results = pd.DataFrame([init_data], columns=["train_acc","valid_acc","test_acc", "train_loss", "valid_loss", "train_aug_loss"]);
+        
+        if save_model and df_results["test_acc"][0]>best_test_acc:
+            model.save(out_folder+str_time+"_"+title_file+'_BestModel.keras')
+            best_test_acc=df_results["test_acc"][0];
         df_results.to_csv(run_name, index=False)
