@@ -12,7 +12,7 @@ from datetime import datetime
 import ipdb
 
 physical_devices = tf.config.list_physical_devices('GPU')
-tf.config.set_visible_devices(physical_devices[2], 'GPU')
+tf.config.set_visible_devices(physical_devices[0], 'GPU')
 #tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 n_runs=200;
@@ -22,7 +22,7 @@ use_brow_aug=False;
 red_train=False;
 brow_stretch_check=False; ##To check if the stretching due to brow is the cause of the increase in acc!
 
-lr=2e-3;batch_size=256; #Should keep them constant for all the runs to make a fair comparison
+lr=5e-4;batch_size=256; #Should keep them constant for all the runs to make a fair comparison
 
 #ipdb.set_trace()
 lr_str="{:.0E}".format(lr);
