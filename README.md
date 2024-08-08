@@ -31,6 +31,7 @@ Since the optimized augmentation could be helpful for other people in the field,
 - NewNN: Has the tuning of YupanaNet, some experiments on architectures, and the final results of the newer neural network.
 - Reproduction_Quipu: Reproduces the results of QuipuNet, first as the training showed in their notebook, and then we optimize the training.
 - Validation_Brow_Aug: Code to validate the increase in accuracy due to the Brownian Augmentation.
+- CompareLRs: Has the results used for the table in the Supplementary Information. In other words, the different tests for different learning rates using QuipuNet with and without Brownian Augmentation.
 
 
 
