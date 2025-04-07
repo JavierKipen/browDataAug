@@ -7,3 +7,7 @@ scripts/.ipynb_checkpoints/
 scripts/Validation_Brow_Aug/.ipynb_checkpoints/
 *.keras
 *.h5
+scripts/Computing_Tests/
+scripts/Impl_ResNet/
+results/CompareLRsRed/
+results/ResNetTuning/
