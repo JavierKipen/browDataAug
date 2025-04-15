@@ -14,7 +14,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Embedding, AveragePooling1D
 from params import QUIPU_LEN_CUT,QUIPU_N_LABELS
 from tensorflow.keras.regularizers import l2
-import ipdb
+#import ipdb
 
 ##### QUIPUNET ###############
 def get_quipu_model(n_filters_block_1=64,kernel_size_block_1=7,dropout_intermediate_blocks=0.25,

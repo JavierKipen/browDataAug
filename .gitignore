@@ -11,3 +11,4 @@ scripts/Computing_Tests/
 scripts/Impl_ResNet/
 results/CompareLRsRed/
 results/ResNetTuning/
+results/PeerReview/RetrieveOutputs/
