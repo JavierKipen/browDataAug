@@ -14,7 +14,7 @@ import cupy as cp
 
 # +
 class ModelTrainerV2():
-    def __init__(self,n_epochs_max=50,lr = 1e-3,batch_size=128,brow_aug_use=True,track_losses=False, optimizer="Adam",momentum=None,validation_perc=0.1,decay_rate=1): 
+    def __init__(self,n_epochs_max=50,lr = 1e-3,batch_size=128,brow_aug_use=True,track_losses=False, optimizer="Adam",momentum=None,validation_perc=0.05,decay_rate=1): 
         self.da=DataAugmenterV2();
         data_folder="../../../ext/QuipuData/"
         self.df_train,self.df_test=get_dataset_as_Quipu(data_folder)
@@ -36,9 +36,9 @@ class ModelTrainerV2():
     def train_es(self,model,tuning=False): #Runs training with early stopping. When tuning=true uses tuning test set, otherwise uses final test set.
         X_train,X_valid,Y_train,Y_valid,X_test,Y_test=get_datasets_numpy(self.df_train,self.df_test,validation_prop=self.validation_perc); #Gets the oversampled dataset (test set is same as quipu when not tuning, if not is separated from the not test data)
         if self.optimizer=="Adam":
-            model.compile(loss = 'categorical_crossentropy', optimizer = Adam(learning_rate=self.lr),metrics = ['accuracy'])
+            model.compile(loss = 'binary_crossentropy', optimizer = Adam(learning_rate=self.lr),metrics = ['accuracy'])
         else:
-            model.compile(loss = 'categorical_crossentropy', optimizer = SGD(learning_rate=self.lr,momentum=self.momentum),metrics = ['accuracy'])
+            model.compile(loss = 'binary_crossentropy', optimizer = SGD(learning_rate=self.lr,momentum=self.momentum),metrics = ['accuracy'])
         X_valid_rs = X_valid.reshape(self.shapeX); Y_valid_rs = Y_valid.reshape(self.shapeY); #Reshapes for the model
         best_weights=model.get_weights();best_valid_loss=1e6;patience_count=0; #For patience setup
         self.train_losses=[];self.valid_losses=[];self.train_aug_losses=[]; #To keep track of the losses
@@ -139,6 +139,7 @@ if __name__ == "__main__":
     import tensorflow as tf
     physical_devices = tf.config.list_physical_devices('GPU')
     tf.config.set_visible_devices(physical_devices[0], 'GPU')
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
     mt=ModelTrainerV2();
     model=YupanaNetModif();
     mt.n_epochs_max=10;

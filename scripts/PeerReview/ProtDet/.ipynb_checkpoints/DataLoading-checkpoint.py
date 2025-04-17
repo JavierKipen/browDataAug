@@ -45,6 +45,7 @@ def divide_numpy_ds(X,Y,prop,keep_perc_classes=False,repeat_classes=False): #Div
         if repeat_classes:
             idxs_train=repeat_reads_to_balance(idxs_train)
         idxs_train=np.concatenate(idxs_train);idxs_valid=np.concatenate(idxs_valid); #List of lists to numpy array
+        np.random.shuffle(idxs_train);
         X1=X[idxs_train,:];Y1=Y[idxs_train,:];
         X2=X[idxs_valid,:];Y2=Y[idxs_valid,:];
     
