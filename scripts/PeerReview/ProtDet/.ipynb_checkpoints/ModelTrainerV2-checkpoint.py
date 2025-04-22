@@ -14,7 +14,7 @@ import cupy as cp
 
 # +
 class ModelTrainerV2():
-    def __init__(self,n_epochs_max=50,lr = 1e-3,batch_size=128,brow_aug_use=True,track_losses=False, optimizer="Adam",momentum=None,validation_perc=0.05,decay_rate=1): 
+    def __init__(self,n_epochs_max=60,lr = 1e-3,batch_size=128,brow_aug_use=True,track_losses=False, optimizer="Adam",momentum=None,validation_perc=0.05,decay_rate=1): 
         self.da=DataAugmenterV2();
         data_folder="../../../ext/QuipuData/"
         self.df_train,self.df_test=get_dataset_as_Quipu(data_folder)

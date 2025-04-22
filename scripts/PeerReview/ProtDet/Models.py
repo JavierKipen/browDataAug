@@ -12,7 +12,7 @@ import ipdb
 
 
 # +
-def YupanaNetModif(filter_size=64,kernels_blocks=[7,5,3],dropout_blocks=0.25,n_dense_1=2048,n_dense_2=512,dropout_final=0.4,pool_size=3,activation="relu",add_attention=True):
+def YupanaNetModif(filter_size=64,kernels_blocks=[7,7,5,3,3],dropout_blocks=0.25,n_dense_1=2048,n_dense_2=512,dropout_final=0.4,pool_size=3,activation="relu",add_attention=True):
     #modelInfo=ModelInfo(model_type="QuipuSkip",filter_size=filter_size,kernels_blocks=kernels_blocks,dense_1=n_dense_1,dense_2=n_dense_2,dropout_end=dropout_final,dropout_blocks=dropout_blocks,activation=activation);
     input_trace = Input(shape=(QUIPU_LEN_CUT,1), dtype='float32', name='input')
     x=input_trace;
